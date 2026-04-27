@@ -2,10 +2,10 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
-import { register } from './actions'
+import { login } from './actions'
 
-export default function RegisterPage() {
-  const [state, action, pending] = useActionState(register, undefined)
+export default function LoginForm({ justRegistered }: { justRegistered: boolean }) {
+  const [state, action, pending] = useActionState(login, undefined)
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
@@ -14,46 +14,32 @@ export default function RegisterPage() {
           <h1 className="text-3xl font-black tracking-tight">
             <span className="text-[#C8102E]">PRO</span>DE 2026
           </h1>
-          <p className="text-[#8B8FA8] mt-1">Creá tu cuenta y empezá a jugar</p>
+          <p className="text-[#8B8FA8] mt-1">Iniciá sesión para continuar</p>
         </div>
+
+        {justRegistered && (
+          <div className="bg-[#00A651]/10 border border-[#00A651]/30 rounded-xl p-3 mb-4 text-center">
+            <p className="text-[#00A651] text-sm font-medium">
+              ¡Cuenta creada! Revisá tu email y confirmá para iniciar sesión.
+            </p>
+          </div>
+        )}
 
         <div className="bg-[#1A1A2E] rounded-2xl p-6 border border-[#2A2D4A]">
           <form action={action} className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium mb-1">
-                Nombre de usuario
+              <label htmlFor="identifier" className="block text-sm font-medium mb-1">
+                Email o usuario
               </label>
               <input
-                id="username"
-                name="username"
+                id="identifier"
+                name="identifier"
                 type="text"
                 required
-                minLength={3}
-                maxLength={20}
+                autoComplete="username"
                 className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
-                placeholder="solo letras, números y _"
+                placeholder="tu@email.com o tu_usuario"
               />
-              {state?.errors?.username && (
-                <p className="text-[#C8102E] text-xs mt-1">{state.errors.username[0]}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
-                placeholder="tu@email.com"
-              />
-              {state?.errors?.email && (
-                <p className="text-[#C8102E] text-xs mt-1">{state.errors.email[0]}</p>
-              )}
             </div>
 
             <div>
@@ -65,13 +51,10 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 required
-                autoComplete="new-password"
+                autoComplete="current-password"
                 className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
-                placeholder="Mínimo 8 caracteres"
+                placeholder="••••••••"
               />
-              {state?.errors?.password && (
-                <p className="text-[#C8102E] text-xs mt-1">{state.errors.password[0]}</p>
-              )}
             </div>
 
             {state?.error && (
@@ -83,15 +66,15 @@ export default function RegisterPage() {
               disabled={pending}
               className="w-full py-3 bg-[#C8102E] hover:bg-[#a50d26] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors"
             >
-              {pending ? 'Creando cuenta...' : 'Crear cuenta'}
+              {pending ? 'Ingresando...' : 'Iniciar sesión'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-[#8B8FA8] text-sm mt-6">
-          ¿Ya tenés cuenta?{' '}
-          <Link href="/login" className="text-[#FFB81C] hover:underline font-medium">
-            Iniciá sesión
+          ¿No tenés cuenta?{' '}
+          <Link href="/register" className="text-[#FFB81C] hover:underline font-medium">
+            Registrate
           </Link>
         </p>
       </div>

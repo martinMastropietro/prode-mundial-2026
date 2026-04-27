@@ -1,6 +1,7 @@
 'use server'
 
 import { z } from 'zod'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 const RegisterSchema = z.object({
@@ -16,9 +17,8 @@ const RegisterSchema = z.object({
 
 type FieldErrors = { username?: string[]; email?: string[]; password?: string[] }
 type RegisterState =
-  | { errors: FieldErrors; error?: never; success?: never }
-  | { errors?: never; error: string; success?: never }
-  | { errors?: never; error?: never; success: boolean }
+  | { errors: FieldErrors; error?: never }
+  | { errors?: never; error: string }
   | undefined
 
 export async function register(
@@ -38,7 +38,6 @@ export async function register(
   const { username, email, password } = parsed.data
   const supabase = await createClient()
 
-  // Check username availability
   const { data: existing } = await supabase
     .from('profiles')
     .select('id')
@@ -49,20 +48,25 @@ export async function register(
     return { errors: { username: ['Ese nombre de usuario ya está en uso'] } as FieldErrors }
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { error: signUpError } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      data: { username, display_name: username },
-    },
+    options: { data: { username, display_name: username } },
   })
 
-  if (error) {
-    if (error.message.includes('already registered')) {
+  if (signUpError) {
+    if (signUpError.message.includes('already registered')) {
       return { errors: { email: ['Ese email ya está registrado'] } as FieldErrors }
     }
     return { error: 'Ocurrió un error. Intentá de nuevo.' }
   }
 
-  return { success: true }
+  // Auto-login después del registro (funciona si la confirmación de email está desactivada)
+  const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+  if (!loginError) {
+    redirect('/dashboard')
+  }
+
+  // Si el email requiere confirmación, ir al login con aviso
+  redirect('/login?registered=1')
 }

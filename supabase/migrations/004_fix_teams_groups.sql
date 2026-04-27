@@ -1,87 +1,56 @@
 -- =============================================
--- FIFA World Cup 2026 — 48 Teams
--- Grupos confirmados por el sorteo del 5 dic 2024
--- Fuente: Wikipedia / FIFA oficial
+-- Corrección grupos FIFA 2026 (sorteo 5 dic 2024)
+-- Ejecutar en Supabase SQL Editor si ya tenés datos
 -- =============================================
 
-TRUNCATE public.teams CASCADE;
+DELETE FROM public.teams;
 
 INSERT INTO public.teams (name, code, flag_emoji, group_code, confederation) VALUES
-
--- GRUPO A (sedes: CDMX, Guadalajara, Monterrey)
 ('México',           'MEX', '🇲🇽', 'A', 'CONCACAF'),
 ('Sudáfrica',        'RSA', '🇿🇦', 'A', 'CAF'),
 ('Corea del Sur',    'KOR', '🇰🇷', 'A', 'AFC'),
 ('República Checa',  'CZE', '🇨🇿', 'A', 'UEFA'),
-
--- GRUPO B (sedes: Toronto, Vancouver)
 ('Canadá',           'CAN', '🇨🇦', 'B', 'CONCACAF'),
 ('Bosnia y Herz.',   'BIH', '🇧🇦', 'B', 'UEFA'),
 ('Qatar',            'QAT', '🇶🇦', 'B', 'AFC'),
 ('Suiza',            'SUI', '🇨🇭', 'B', 'UEFA'),
-
--- GRUPO C (sedes: Los Ángeles, San Francisco, Seattle)
 ('Brasil',           'BRA', '🇧🇷', 'C', 'CONMEBOL'),
 ('Marruecos',        'MAR', '🇲🇦', 'C', 'CAF'),
 ('Haití',            'HAI', '🇭🇹', 'C', 'CONCACAF'),
 ('Escocia',          'SCO', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'C', 'UEFA'),
-
--- GRUPO D (sedes: Nueva York, Boston, Filadelfia)
 ('Estados Unidos',   'USA', '🇺🇸', 'D', 'CONCACAF'),
 ('Paraguay',         'PAR', '🇵🇾', 'D', 'CONMEBOL'),
 ('Australia',        'AUS', '🇦🇺', 'D', 'AFC'),
 ('Turquía',          'TUR', '🇹🇷', 'D', 'UEFA'),
-
--- GRUPO E (sedes: Dallas, Houston, Atlanta)
 ('Alemania',         'GER', '🇩🇪', 'E', 'UEFA'),
 ('Curazao',          'CUW', '🇨🇼', 'E', 'CONCACAF'),
 ('Costa de Marfil',  'CIV', '🇨🇮', 'E', 'CAF'),
 ('Ecuador',          'ECU', '🇪🇨', 'E', 'CONMEBOL'),
-
--- GRUPO F (sedes: Miami, Orlando, Kansas City)
 ('Países Bajos',     'NED', '🇳🇱', 'F', 'UEFA'),
 ('Japón',            'JPN', '🇯🇵', 'F', 'AFC'),
 ('Suecia',           'SWE', '🇸🇪', 'F', 'UEFA'),
 ('Túnez',            'TUN', '🇹🇳', 'F', 'CAF'),
-
--- GRUPO G
 ('España',           'ESP', '🇪🇸', 'G', 'UEFA'),
 ('Argelia',          'ALG', '🇩🇿', 'G', 'CAF'),
 ('Nigeria',          'NGA', '🇳🇬', 'G', 'CAF'),
 ('Croacia',          'CRO', '🇭🇷', 'G', 'UEFA'),
-
--- GRUPO H
 ('Argentina',        'ARG', '🇦🇷', 'H', 'CONMEBOL'),
 ('Chile',            'CHI', '🇨🇱', 'H', 'CONMEBOL'),
 ('Iraq',             'IRQ', '🇮🇶', 'H', 'AFC'),
 ('Ucrania',          'UKR', '🇺🇦', 'H', 'UEFA'),
-
--- GRUPO I
 ('Francia',          'FRA', '🇫🇷', 'I', 'UEFA'),
 ('Arabia Saudita',   'KSA', '🇸🇦', 'I', 'AFC'),
 ('Camerún',          'CMR', '🇨🇲', 'I', 'CAF'),
 ('Costa Rica',       'CRC', '🇨🇷', 'I', 'CONCACAF'),
-
--- GRUPO J
 ('Inglaterra',       'ENG', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'J', 'UEFA'),
 ('Irán',             'IRN', '🇮🇷', 'J', 'AFC'),
 ('Venezuela',        'VEN', '🇻🇪', 'J', 'CONMEBOL'),
 ('Senegal',          'SEN', '🇸🇳', 'J', 'CAF'),
-
--- GRUPO K
 ('Portugal',         'POR', '🇵🇹', 'K', 'UEFA'),
 ('Bélgica',          'BEL', '🇧🇪', 'K', 'UEFA'),
 ('Colombia',         'COL', '🇨🇴', 'K', 'CONMEBOL'),
 ('Uruguay',          'URU', '🇺🇾', 'K', 'CONMEBOL'),
-
--- GRUPO L
-('Marruecos',        'MAR2','🇲🇦', 'L', 'CAF'),  -- placeholder, verificar sorteo oficial
 ('Serbia',           'SRB', '🇷🇸', 'L', 'UEFA'),
 ('Honduras',         'HON', '🇭🇳', 'L', 'CONCACAF'),
-('Uzbekistán',       'UZB', '🇺🇿', 'L', 'AFC')
-
-ON CONFLICT (code) DO UPDATE SET
-  name = EXCLUDED.name,
-  flag_emoji = EXCLUDED.flag_emoji,
-  group_code = EXCLUDED.group_code,
-  confederation = EXCLUDED.confederation;
+('Uzbekistán',       'UZB', '🇺🇿', 'L', 'AFC'),
+('Ghana',            'GHA', '🇬🇭', 'L', 'CAF');
