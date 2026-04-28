@@ -1,17 +1,8 @@
 import type { Match, MatchPhase, Team } from '@/types'
 import { R32_BRACKET } from '@/lib/utils/simulate'
-import type { ProjectedQualifiers } from '@/lib/utils/simulate'
+import type { MatchProjection, ProjectedQualifiers } from '@/lib/utils/simulate'
 
 type BracketMatch = Match & { slotLabel: string }
-
-const PHASE_LABELS: Record<string, string> = {
-  round_of_32: '32avos',
-  round_of_16: 'Octavos',
-  quarterfinal: 'Cuartos',
-  semifinal: 'Semifinal',
-  final: 'Final',
-  third_place: '3° Puesto',
-}
 
 function TeamSlot({
   team, projected, isWinner
@@ -117,10 +108,11 @@ function MatchBox({
   )
 }
 
-function RoundColumn({ label, matches, projectedQualifiers }: {
+function RoundColumn({ label, matches, projectedQualifiers, projectedMatches }: {
   label: string
   matches: (BracketMatch | null)[]
   projectedQualifiers?: ProjectedQualifiers
+  projectedMatches?: Record<number, MatchProjection>
 }) {
   return (
     <div className="flex flex-col gap-1 flex-shrink-0">
@@ -128,8 +120,9 @@ function RoundColumn({ label, matches, projectedQualifiers }: {
       <div className="flex flex-col" style={{ gap: '8px', justifyContent: 'space-around' }}>
         {matches.map((m, i) => {
           const slots = m ? R32_BRACKET[m.match_number] : null
-          const projH = slots ? projectedQualifiers?.get(slots[0]) : undefined
-          const projA = slots ? projectedQualifiers?.get(slots[1]) : undefined
+          const matchProjection = m ? projectedMatches?.[m.match_number] : undefined
+          const projH = matchProjection?.home ?? (slots ? projectedQualifiers?.get(slots[0]) : undefined)
+          const projA = matchProjection?.away ?? (slots ? projectedQualifiers?.get(slots[1]) : undefined)
           return (
             <MatchBox
               key={m?.id ?? `empty-${i}`}
@@ -147,9 +140,11 @@ function RoundColumn({ label, matches, projectedQualifiers }: {
 export default function KnockoutBracket({
   matches,
   projectedQualifiers,
+  projectedMatches,
 }: {
   matches: Match[]
   projectedQualifiers?: ProjectedQualifiers
+  projectedMatches?: Record<number, MatchProjection>
 }) {
   const byPhase: Partial<Record<MatchPhase, Match[]>> = {}
   for (const m of matches) {
@@ -183,6 +178,7 @@ export default function KnockoutBracket({
   const [qfL,  qfR]  = half(pad(qf, 4))
   const [sfL,  sfR]  = half(pad(sf, 2))
   const hasR32 = r32.length > 0
+  const hasProjection = !!projectedQualifiers || !!projectedMatches
 
   const divider = <div className="w-px bg-gradient-to-b from-transparent via-[#2A2D4A] to-transparent self-stretch flex-shrink-0" />
 
@@ -190,10 +186,10 @@ export default function KnockoutBracket({
     <div className="overflow-x-auto pb-4">
       <div className="min-w-max">
         <div className="flex items-stretch gap-3">
-          {hasR32 && <><RoundColumn label="32avos" matches={r32L} projectedQualifiers={projectedQualifiers} />{divider}</>}
-          <RoundColumn label="Octavos" matches={r16L} />{divider}
-          <RoundColumn label="Cuartos" matches={qfL} />{divider}
-          <RoundColumn label="Semifinal" matches={sfL} />{divider}
+          {hasR32 && <><RoundColumn label="32avos" matches={r32L} projectedQualifiers={projectedQualifiers} projectedMatches={projectedMatches} />{divider}</>}
+          <RoundColumn label="Octavos" matches={r16L} projectedMatches={projectedMatches} />{divider}
+          <RoundColumn label="Cuartos" matches={qfL} projectedMatches={projectedMatches} />{divider}
+          <RoundColumn label="Semifinal" matches={sfL} projectedMatches={projectedMatches} />{divider}
 
           {/* Center */}
           <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4">
@@ -201,17 +197,26 @@ export default function KnockoutBracket({
               <div className="text-2xl mb-1">🏆</div>
               <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider">Final</div>
             </div>
-            <MatchBox match={fin[0] ? { ...fin[0], slotLabel: 'Final' } : null} highlight />
+            <MatchBox
+              match={fin[0] ? { ...fin[0], slotLabel: 'Final' } : null}
+              projectedHome={fin[0] ? projectedMatches?.[fin[0].match_number]?.home : undefined}
+              projectedAway={fin[0] ? projectedMatches?.[fin[0].match_number]?.away : undefined}
+              highlight
+            />
             <div className="mt-4 text-center">
               <div className="text-[#8B8FA8] text-xs font-bold uppercase tracking-wider mb-2">3° Puesto</div>
-              <MatchBox match={tp[0] ? { ...tp[0], slotLabel: '3°' } : null} />
+              <MatchBox
+                match={tp[0] ? { ...tp[0], slotLabel: '3°' } : null}
+                projectedHome={tp[0] ? projectedMatches?.[tp[0].match_number]?.home : undefined}
+                projectedAway={tp[0] ? projectedMatches?.[tp[0].match_number]?.away : undefined}
+              />
             </div>
           </div>
 
-          {divider}<RoundColumn label="Semifinal" matches={sfR} />
-          {divider}<RoundColumn label="Cuartos" matches={qfR} />
-          {divider}<RoundColumn label="Octavos" matches={r16R} />
-          {hasR32 && <>{divider}<RoundColumn label="32avos" matches={r32R} projectedQualifiers={projectedQualifiers} /></>}
+          {divider}<RoundColumn label="Semifinal" matches={sfR} projectedMatches={projectedMatches} />
+          {divider}<RoundColumn label="Cuartos" matches={qfR} projectedMatches={projectedMatches} />
+          {divider}<RoundColumn label="Octavos" matches={r16R} projectedMatches={projectedMatches} />
+          {hasR32 && <>{divider}<RoundColumn label="32avos" matches={r32R} projectedQualifiers={projectedQualifiers} projectedMatches={projectedMatches} /></>}
         </div>
 
         <div className="flex gap-6 mt-6 pt-4 border-t border-[#2A2D4A] text-xs text-[#8B8FA8]">
@@ -219,10 +224,12 @@ export default function KnockoutBracket({
             <span className="w-3 h-3 rounded-sm bg-[#C8102E]/20 border border-[#C8102E]/30 inline-block" />
             Ganador
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="text-[#6699ff] font-bold">proj.</span>
-            Proyectado desde tus predicciones
-          </span>
+          {hasProjection && (
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#6699ff] font-bold">proj.</span>
+              Proyectado desde tus predicciones
+            </span>
+          )}
         </div>
       </div>
     </div>

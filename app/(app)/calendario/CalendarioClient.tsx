@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react'
 import GroupStageView from '@/components/calendario/GroupStageView'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
-import type { Match, Prediction, Team } from '@/types'
-import { simulateGroupStandings, buildProjectedQualifiers } from '@/lib/utils/simulate'
+import type { Match } from '@/types'
 
 const TABS = [
   { id: 'grupos', label: 'Fase de grupos' },
@@ -13,27 +12,13 @@ const TABS = [
 
 type Props = {
   matches: Match[]
-  teams: Team[]
-  userPredictions: Record<string, Prediction>
 }
 
-export default function CalendarioClient({ matches, teams, userPredictions }: Props) {
+export default function CalendarioClient({ matches }: Props) {
   const [tab, setTab] = useState('grupos')
-
-  const predMap = useMemo(
-    () => new Map(Object.entries(userPredictions)),
-    [userPredictions]
-  )
 
   const groupMatches    = useMemo(() => matches.filter(m => m.phase === 'group'), [matches])
   const knockoutMatches = useMemo(() => matches.filter(m => m.phase !== 'group'), [matches])
-
-  const projectedQualifiers = useMemo(() => {
-    const standings = simulateGroupStandings(matches, predMap, teams)
-    return buildProjectedQualifiers(standings)
-  }, [matches, predMap, teams])
-
-  const hasPredictions = predMap.size > 0
 
   return (
     <div>
@@ -56,17 +41,7 @@ export default function CalendarioClient({ matches, teams, userPredictions }: Pr
 
       {tab === 'grupos' && <GroupStageView matches={groupMatches} />}
       {tab === 'eliminatorias' && (
-        <>
-          {hasPredictions && (
-            <div className="mb-4 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
-              ⚡ Proyección basada en tus predicciones — los equipos se actualizan automáticamente
-            </div>
-          )}
-          <KnockoutBracket
-            matches={knockoutMatches}
-            projectedQualifiers={projectedQualifiers}
-          />
-        </>
+        <KnockoutBracket matches={knockoutMatches} />
       )}
     </div>
   )

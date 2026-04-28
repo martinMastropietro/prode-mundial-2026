@@ -15,9 +15,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('id', user.id)
     .single()
 
+  const isAdmin = user.email === process.env.ADMIN_EMAIL
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar profile={profile} />
+      <Navbar profile={profile} isAdmin={isAdmin} />
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 pb-24 sm:pb-6">
         {children}
       </main>

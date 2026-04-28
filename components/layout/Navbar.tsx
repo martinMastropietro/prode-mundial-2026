@@ -3,9 +3,10 @@ import { logout } from '@/app/(app)/actions'
 
 type Props = {
   profile: { username: string; display_name: string | null; avatar_url: string | null } | null
+  isAdmin?: boolean
 }
 
-export default function Navbar({ profile }: Props) {
+export default function Navbar({ profile, isAdmin }: Props) {
   return (
     <header className="border-b border-[#2A2D4A] bg-[#0D0D1A]/90 backdrop-blur-sm sticky top-0 z-40">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -28,6 +29,11 @@ export default function Navbar({ profile }: Props) {
           <Link href="/groups/create" className="text-[#8B8FA8] hover:text-white transition-colors">
             Crear grupo
           </Link>
+          {isAdmin && (
+            <Link href="/admin" className="text-[#FFB81C] hover:text-white transition-colors font-bold">
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
