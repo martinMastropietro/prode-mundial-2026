@@ -70,24 +70,24 @@ export function simulateGroupStandings(
 }
 
 // Mapeo R32: match_number → [slot_local, slot_visitante]
-// Aproximación del bracket FIFA 2026 (estructura oficial TBD)
+// Fuente: fixture oficial FIFA 2026
 export const R32_BRACKET: Record<number, [string, string]> = {
-  73:  ['1A', '2B'],
-  74:  ['1C', '2D'],
-  75:  ['1E', '2F'],
-  76:  ['1G', '2H'],
-  77:  ['1I', '2J'],
-  78:  ['1K', '2L'],
-  79:  ['1B', '2A'],
-  80:  ['1D', '2C'],
-  81:  ['1F', '2E'],
-  82:  ['1H', '2G'],
-  83:  ['1J', '2I'],
-  84:  ['1L', '2K'],
-  85:  ['3rd-1', '3rd-2'],
-  86:  ['3rd-3', '3rd-4'],
-  87:  ['3rd-5', '3rd-6'],
-  88:  ['3rd-7', '3rd-8'],
+  73: ['2A', '2B'],
+  74: ['1E', '3rd'],   // 3° mejor de A/B/C/D/F
+  75: ['1F', '2C'],
+  76: ['1C', '2F'],
+  77: ['1I', '3rd'],   // 3° mejor de C/D/F/G/H
+  78: ['2E', '2I'],
+  79: ['1A', '3rd'],   // 3° mejor de C/E/F/H/I
+  80: ['1L', '3rd'],   // 3° mejor de E/H/I/J/K
+  81: ['1D', '3rd'],   // 3° mejor de B/E/F/I/J
+  82: ['1G', '3rd'],   // 3° mejor de A/E/H/I/J
+  83: ['2K', '2L'],
+  84: ['1H', '2J'],
+  85: ['1B', '3rd'],   // 3° mejor de E/F/G/I/J
+  86: ['1J', '2H'],
+  87: ['1K', '3rd'],   // 3° mejor de D/E/I/J/L
+  88: ['2D', '2G'],
 }
 
 export function buildProjectedQualifiers(

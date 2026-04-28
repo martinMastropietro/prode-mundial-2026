@@ -81,21 +81,25 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
             ) : (
               <div className="flex items-center gap-1">
                 <input
-                  type="number"
-                  min={0}
-                  max={99}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={2}
                   value={homeGoals}
-                  onChange={(e) => setHomeGoals(e.target.value)}
+                  onChange={(e) => setHomeGoals(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
+                  placeholder="0"
                 />
                 <span className="text-[#8B8FA8]">-</span>
                 <input
-                  type="number"
-                  min={0}
-                  max={99}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={2}
                   value={awayGoals}
-                  onChange={(e) => setAwayGoals(e.target.value)}
+                  onChange={(e) => setAwayGoals(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
+                  placeholder="0"
                 />
               </div>
             )}
