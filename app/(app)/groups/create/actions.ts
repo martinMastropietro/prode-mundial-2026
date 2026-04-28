@@ -67,7 +67,12 @@ export async function createGroup(
     .single()
 
   if (error || !group) {
-    return { error: 'Error al crear el grupo. Intentá de nuevo.', values: raw }
+    const msg = error?.message?.includes('access_code')
+      ? 'Falta ejecutar la migración SQL en Supabase (005_remove_access_code.sql)'
+      : error?.message?.includes('does not exist')
+      ? 'Las tablas no existen. Ejecutá DEPLOY_ALL.sql en Supabase.'
+      : `Error al crear el grupo: ${error?.message ?? 'desconocido'}`
+    return { error: msg, values: raw }
   }
 
   await supabase.from('group_members').insert({
