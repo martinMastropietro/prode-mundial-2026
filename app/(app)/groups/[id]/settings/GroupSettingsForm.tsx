@@ -7,7 +7,6 @@ type Group = {
   id: string
   name: string
   public_id: string
-  access_code: string
   predictions_visible: boolean
 }
 
@@ -25,73 +24,63 @@ export default function GroupSettingsForm({ group, members }: Props) {
   const [copied, setCopied] = useState(false)
 
   function copyInviteInfo() {
-    navigator.clipboard.writeText(
-      `Grupo: ${group.name}\nID: ${group.public_id}\nCódigo: ${group.access_code}`
-    )
+    navigator.clipboard.writeText(`ID: ${group.public_id}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   return (
     <div className="space-y-6 max-w-md">
-      {/* Group info */}
-      <div className="bg-[#1A1A2E] rounded-2xl p-5 border border-[#2A2D4A]">
-        <h2 className="font-bold mb-4">Información del grupo</h2>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-[#8B8FA8]">ID del grupo</span>
-            <span className="font-mono font-bold">{group.public_id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[#8B8FA8]">Código actual</span>
-            <span className="font-mono font-bold">{group.access_code}</span>
-          </div>
+      {/* Invite card */}
+      <div className="bg-gradient-to-r from-[#C8102E]/10 to-[#003087]/10 rounded-2xl p-5 border border-[#2A2D4A]">
+        <h2 className="font-bold mb-3">Invitar al grupo</h2>
+        <p className="text-[#8B8FA8] text-xs mb-3">
+          Compartí el ID con tus amigos. Ellos lo ingresan en "Unirse a un grupo" junto con la contraseña.
+        </p>
+        <div className="flex items-center gap-3 bg-[#0D0D1A] rounded-xl px-4 py-3 border border-[#2A2D4A]">
+          <span className="font-mono font-black text-[#FFB81C] text-lg tracking-widest flex-1">
+            {group.public_id}
+          </span>
+          <button
+            onClick={copyInviteInfo}
+            className="text-xs px-3 py-1.5 bg-[#003087] hover:bg-[#00246b] text-white font-bold rounded-lg transition-colors"
+          >
+            {copied ? '✓' : '📋 Copiar'}
+          </button>
         </div>
-        <button
-          onClick={copyInviteInfo}
-          className="mt-4 w-full py-2 bg-[#003087] hover:bg-[#00246b] text-white text-sm font-bold rounded-xl transition-colors"
-        >
-          {copied ? '✓ Copiado' : '📋 Copiar info de invitación'}
-        </button>
       </div>
 
       {/* Edit settings */}
       <div className="bg-[#1A1A2E] rounded-2xl p-5 border border-[#2A2D4A]">
-        <h2 className="font-bold mb-4">Editar configuración</h2>
+        <h2 className="font-bold mb-4">Configuración</h2>
         <form action={action} className="space-y-4">
           <input type="hidden" name="group_id" value={group.id} />
 
           <div>
-            <label className="block text-sm font-medium mb-1">Nuevo código de acceso</label>
-            <input
-              name="access_code"
-              type="text"
-              maxLength={20}
-              placeholder={group.access_code}
-              className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors uppercase"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Nueva contraseña</label>
+            <label className="block text-sm font-medium mb-1">
+              Nueva contraseña
+            </label>
             <input
               name="access_password"
-              type="password"
+              type="text"
+              maxLength={30}
               placeholder="Dejar vacío para no cambiar"
               className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between py-1">
             <div>
               <label className="block text-sm font-medium">Predicciones visibles antes del partido</label>
-              <p className="text-[#8B8FA8] text-xs mt-0.5">Si está activo, todos pueden ver las predicciones ajenas antes de que empiece el partido</p>
+              <p className="text-[#8B8FA8] text-xs mt-0.5">
+                Todos pueden ver las predicciones ajenas antes de que empiece el partido
+              </p>
             </div>
             <input
               type="checkbox"
               name="predictions_visible"
               defaultChecked={group.predictions_visible}
-              className="w-5 h-5 accent-[#C8102E]"
+              className="w-5 h-5 accent-[#C8102E] ml-4 flex-shrink-0"
             />
           </div>
 
@@ -113,7 +102,7 @@ export default function GroupSettingsForm({ group, members }: Props) {
         <h2 className="font-bold mb-4">Miembros ({members.length})</h2>
         <div className="space-y-2">
           {members.map((m) => (
-            <div key={m.user_id} className="flex items-center justify-between text-sm">
+            <div key={m.user_id} className="flex items-center justify-between text-sm py-1">
               <span>{m.profile?.display_name ?? m.profile?.username ?? m.user_id}</span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                 m.role === 'admin'

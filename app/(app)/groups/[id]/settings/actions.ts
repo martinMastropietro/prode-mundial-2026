@@ -10,15 +10,13 @@ export async function updateGroupSettings(
   formData: FormData
 ): Promise<SettingsState> {
   const groupId = formData.get('group_id') as string
-  const accessCode = (formData.get('access_code') as string)?.trim().toUpperCase()
-  const accessPassword = formData.get('access_password') as string
+  const accessPassword = (formData.get('access_password') as string)?.trim()
   const predictionsVisible = formData.get('predictions_visible') === 'on'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Verify admin
   const { data: group } = await supabase
     .from('groups')
     .select('owner_id')
@@ -28,7 +26,6 @@ export async function updateGroupSettings(
   if (!group || group.owner_id !== user.id) return { error: 'Sin permisos' }
 
   const updates: Record<string, unknown> = { predictions_visible: predictionsVisible }
-  if (accessCode) updates.access_code = accessCode
   if (accessPassword) updates.access_password = accessPassword
 
   const { error } = await supabase.from('groups').update(updates).eq('id', groupId)

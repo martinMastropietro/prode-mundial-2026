@@ -13,31 +13,18 @@ export async function searchGroup(
   _state: SearchState,
   formData: FormData
 ): Promise<SearchState> {
-  const query = (formData.get('public_id') as string)?.trim()
-  if (!query) return { error: 'Ingresá el ID o nombre del grupo' }
+  const publicId = (formData.get('public_id') as string)?.trim().toUpperCase()
+  if (!publicId) return { error: 'Ingresá el ID del grupo' }
 
   const supabase = await createClient()
-
-  // Primero buscar por public_id exacto
-  const { data: byId } = await supabase
+  const { data: group } = await supabase
     .from('groups')
     .select('id, name, public_id')
-    .eq('public_id', query.toUpperCase())
+    .eq('public_id', publicId)
     .maybeSingle()
 
-  if (byId) return { group: byId }
-
-  // Si no encontró, buscar por nombre (case-insensitive)
-  const { data: byName } = await supabase
-    .from('groups')
-    .select('id, name, public_id')
-    .ilike('name', `%${query}%`)
-    .limit(1)
-    .maybeSingle()
-
-  if (byName) return { group: byName }
-
-  return { error: 'Grupo no encontrado. Buscá por ID (WC26-XXXXXX) o nombre.' }
+  if (!group) return { error: 'Grupo no encontrado. Verificá el ID (ej: WC26-PSASP8).' }
+  return { group }
 }
 
 export async function joinGroup(
@@ -45,7 +32,6 @@ export async function joinGroup(
   formData: FormData
 ): Promise<JoinState> {
   const groupId = formData.get('group_id') as string
-  const accessCode = (formData.get('access_code') as string)?.trim().toUpperCase()
   const accessPassword = formData.get('access_password') as string
 
   const supabase = await createClient()
@@ -54,15 +40,13 @@ export async function joinGroup(
 
   const { data: group } = await supabase
     .from('groups')
-    .select('id, access_code, access_password')
+    .select('id, access_password')
     .eq('id', groupId)
     .single()
 
   if (!group) return { error: 'Grupo no encontrado' }
-  if (group.access_code !== accessCode) return { error: 'Código incorrecto' }
   if (group.access_password !== accessPassword) return { error: 'Contraseña incorrecta' }
 
-  // Si ya es miembro, redirigir directo
   const { data: existing } = await supabase
     .from('group_members')
     .select('id')

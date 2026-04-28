@@ -7,11 +7,10 @@ import { generatePublicId } from '@/lib/utils/groupId'
 
 const CreateGroupSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres').max(50, 'Máximo 50 caracteres').trim(),
-  access_code: z.string().min(2, 'Mínimo 2 caracteres').max(20, 'Máximo 20 caracteres').trim(),
   access_password: z.string().min(4, 'Mínimo 4 caracteres'),
 })
 
-type FieldErrors = { name?: string[]; access_code?: string[]; access_password?: string[] }
+type FieldErrors = { name?: string[]; access_password?: string[] }
 type CreateGroupState =
   | { errors: FieldErrors; error?: never }
   | { errors?: never; error: string }
@@ -23,7 +22,6 @@ export async function createGroup(
 ): Promise<CreateGroupState> {
   const parsed = CreateGroupSchema.safeParse({
     name: formData.get('name'),
-    access_code: formData.get('access_code'),
     access_password: formData.get('access_password'),
   })
 
@@ -35,7 +33,6 @@ export async function createGroup(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Generate unique public_id
   let publicId = generatePublicId()
   let attempts = 0
   while (attempts < 5) {
@@ -54,7 +51,6 @@ export async function createGroup(
     .insert({
       public_id: publicId,
       name: parsed.data.name,
-      access_code: parsed.data.access_code.toUpperCase(),
       access_password: parsed.data.access_password,
       owner_id: user.id,
     })

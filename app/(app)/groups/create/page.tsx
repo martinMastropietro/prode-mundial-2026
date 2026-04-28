@@ -23,7 +23,7 @@ export default function CreateGroupPage() {
               required
               maxLength={50}
               className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
-              placeholder="Los campeones"
+              placeholder="Los Mutantes"
             />
             {state?.errors?.name && (
               <p className="text-[#C8102E] text-xs mt-1">{state.errors.name[0]}</p>
@@ -31,36 +31,18 @@ export default function CreateGroupPage() {
           </div>
 
           <div>
-            <label htmlFor="access_code" className="block text-sm font-medium mb-1">
-              Código de acceso
-              <span className="text-[#8B8FA8] font-normal ml-1">(lo compartís con tu grupo)</span>
-            </label>
-            <input
-              id="access_code"
-              name="access_code"
-              type="text"
-              required
-              maxLength={20}
-              className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors uppercase"
-              placeholder="AMIGOS2026"
-            />
-            {state?.errors?.access_code && (
-              <p className="text-[#C8102E] text-xs mt-1">{state.errors.access_code[0]}</p>
-            )}
-          </div>
-
-          <div>
             <label htmlFor="access_password" className="block text-sm font-medium mb-1">
-              Contraseña de acceso
-              <span className="text-[#8B8FA8] font-normal ml-1">(para mayor seguridad)</span>
+              Contraseña
+              <span className="text-[#8B8FA8] font-normal ml-1">— la compartís con tu grupo</span>
             </label>
             <input
               id="access_password"
               name="access_password"
-              type="password"
+              type="text"
               required
+              maxLength={30}
               className="w-full px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
-              placeholder="••••••••"
+              placeholder="ej: mundial2026"
             />
             {state?.errors?.access_password && (
               <p className="text-[#C8102E] text-xs mt-1">{state.errors.access_password[0]}</p>
@@ -73,8 +55,8 @@ export default function CreateGroupPage() {
 
           <div className="bg-[#0D0D1A] rounded-xl p-4 border border-[#2A2D4A]">
             <p className="text-[#8B8FA8] text-xs">
-              Se generará un <strong className="text-white">ID único</strong> para tu grupo (ej: WC26-XK92AB).
-              Compartí ese ID + código + contraseña con tus amigos para que puedan unirse.
+              Se genera un <strong className="text-white">ID único</strong> para tu grupo (ej: WC26-PSASP8).
+              Compartí ese ID + contraseña para que tus amigos puedan unirse.
             </p>
           </div>
 
