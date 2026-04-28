@@ -62,7 +62,7 @@ export async function joinGroup(
     role: 'member',
   })
 
-  if (error) return { error: 'Error al unirse. Intentá de nuevo.' }
+  if (error) return { error: `Error: ${error.message}` }
 
   redirect(`/groups/${groupId}`)
 }
