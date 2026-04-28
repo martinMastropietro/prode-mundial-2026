@@ -58,6 +58,9 @@ export type Group = {
   owner_id: string
   max_members: number
   predictions_visible: boolean
+  has_top_scorer: boolean
+  has_top_assist: boolean
+  has_mvp: boolean
   created_at: string
   updated_at: string | null
 }
@@ -97,6 +100,12 @@ export type SpecialPrediction = {
   champion_points: number
   runner_up_points: number
   third_place_points: number
+  top_scorer_name: string | null
+  top_assist_name: string | null
+  mvp_name: string | null
+  top_scorer_points: number
+  top_assist_points: number
+  mvp_points: number
   locked_at: string | null
   created_at: string
   updated_at: string | null

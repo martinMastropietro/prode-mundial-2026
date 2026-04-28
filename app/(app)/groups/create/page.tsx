@@ -84,6 +84,27 @@ export default function CreateGroupPage() {
             )}
           </div>
 
+          {/* Opciones del grupo */}
+          <div className="space-y-3 pt-1">
+            <p className="text-sm font-medium text-[#8B8FA8] uppercase tracking-wide">Opciones</p>
+
+            {[
+              { name: 'predictions_visible', label: 'Ver predicciones de otros antes del partido' },
+              { name: 'has_top_scorer',      label: 'Incluir máximo goleador (+5 pts)' },
+              { name: 'has_top_assist',      label: 'Incluir máximo asistidor (+5 pts)' },
+              { name: 'has_mvp',             label: 'Incluir MVP (+5 pts)' },
+            ].map(opt => (
+              <label key={opt.name} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name={opt.name}
+                  className="w-4 h-4 accent-[#C8102E]"
+                />
+                <span className="text-sm">{opt.label}</span>
+              </label>
+            ))}
+          </div>
+
           {state?.error && (
             <p className="text-[#C8102E] text-sm">{state.error}</p>
           )}

@@ -18,7 +18,6 @@ export default async function GroupHomePage({ params }: Props) {
 
   if (!group) notFound()
 
-  // Check membership
   const { data: membership } = await supabase
     .from('group_members')
     .select('role')
@@ -28,45 +27,45 @@ export default async function GroupHomePage({ params }: Props) {
 
   if (!membership) redirect('/dashboard')
 
-  // Top ranking
-  const { data: rankingRows } = await supabase
+  const { data: rankingRows, error: rankingError } = await supabase
     .from('ranking_by_group')
     .select('*')
     .eq('group_id', id)
     .order('total_points', { ascending: false })
-    .limit(5)
 
   const ranking = (rankingRows ?? []) as RankingRow[]
   const myRank = ranking.findIndex((r) => r.user_id === user!.id) + 1
-
-  // Next match
-  const { data: nextMatch } = await supabase
-    .from('matches')
-    .select('id, match_date, phase, home_team:home_team_id(name, flag_emoji), away_team:away_team_id(name, flag_emoji)')
-    .eq('status', 'scheduled')
-    .gte('match_date', new Date().toISOString())
-    .order('match_date', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  const medals = ['🥇', '🥈', '🥉']
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#C8102E]/20 to-[#003087]/20 rounded-2xl p-6 border border-[#2A2D4A]">
-        <div className="flex items-start justify-between">
+      <div className="bg-gradient-to-r from-[#C8102E]/20 to-[#003087]/20 rounded-2xl p-5 border border-[#2A2D4A]">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black">{group.name}</h1>
-            <button
-              onClick={() => navigator.clipboard.writeText(group.public_id)}
-              className="text-[#8B8FA8] text-sm mt-1 hover:text-white transition-colors flex items-center gap-1"
-            >
-              {group.public_id} <span className="text-xs">📋</span>
-            </button>
+            <p className="text-[#8B8FA8] text-sm font-mono mt-0.5">{group.public_id}</p>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {group.predictions_visible && (
+                <span className="text-xs px-2 py-0.5 bg-[#003087]/30 text-[#6699ff] rounded-full">Predicciones visibles</span>
+              )}
+              {group.has_top_scorer && (
+                <span className="text-xs px-2 py-0.5 bg-[#FFB81C]/20 text-[#FFB81C] rounded-full">⚽ Goleador</span>
+              )}
+              {group.has_top_assist && (
+                <span className="text-xs px-2 py-0.5 bg-[#FFB81C]/20 text-[#FFB81C] rounded-full">🎯 Asistidor</span>
+              )}
+              {group.has_mvp && (
+                <span className="text-xs px-2 py-0.5 bg-[#FFB81C]/20 text-[#FFB81C] rounded-full">⭐ MVP</span>
+              )}
+            </div>
           </div>
           {myRank > 0 && (
-            <div className="text-right">
+            <div className="text-right flex-shrink-0">
               <div className="text-[#8B8FA8] text-xs">Tu posición</div>
-              <div className="text-3xl font-black text-[#FFB81C]">#{myRank}</div>
+              <div className="text-3xl font-black text-[#FFB81C]">
+                {myRank <= 3 ? medals[myRank - 1] : `#${myRank}`}
+              </div>
             </div>
           )}
         </div>
@@ -76,12 +75,15 @@ export default async function GroupHomePage({ params }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { href: `/groups/${id}/matches`, icon: '⚽', label: 'Partidos' },
+          { href: `/groups/${id}/special`, icon: '⭐', label: 'Predicción' },
           { href: `/groups/${id}/rankings`, icon: '🏆', label: 'Ranking' },
-          { href: `/groups/${id}/special`, icon: '⭐', label: 'Especiales' },
-          ...(membership.role === 'admin' ? [{ href: `/groups/${id}/settings`, icon: '⚙️', label: 'Config' }] : []),
+          ...(membership.role === 'admin'
+            ? [{ href: `/groups/${id}/settings`, icon: '⚙️', label: 'Config' }]
+            : [{ href: `/groups/${id}/matches`, icon: '📅', label: 'Predecir' }]
+          ),
         ].map((item) => (
           <Link
-            key={item.href}
+            key={item.href + item.label}
             href={item.href}
             className="bg-[#1A1A2E] hover:bg-[#16213E] rounded-xl p-4 border border-[#2A2D4A] transition-colors text-center"
           >
@@ -91,75 +93,66 @@ export default async function GroupHomePage({ params }: Props) {
         ))}
       </div>
 
-      {/* Top 3 */}
-      {ranking.length > 0 && (
-        <section>
-          <h2 className="font-bold text-lg mb-4">Ranking del grupo</h2>
-          <div className="space-y-2">
-            {ranking.map((row, i) => (
-              <div
-                key={row.user_id}
-                className={`flex items-center gap-4 p-4 rounded-xl border transition-colors ${
-                  row.user_id === user!.id
-                    ? 'bg-[#C8102E]/10 border-[#C8102E]/30'
-                    : 'bg-[#1A1A2E] border-[#2A2D4A]'
-                }`}
-              >
-                <span className={`text-xl font-black w-8 text-center ${
-                  i === 0 ? 'text-[#FFB81C]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-[#8B8FA8]'
-                }`}>
-                  #{i + 1}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold text-sm">
-                  {(row.display_name ?? row.username)[0].toUpperCase()}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{row.display_name ?? row.username}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-[#FFB81C]">{row.total_points}</div>
-                  <div className="text-[#8B8FA8] text-xs">pts</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Link
-            href={`/groups/${id}/rankings`}
-            className="block text-center text-[#C8102E] text-sm font-medium mt-3 hover:underline"
-          >
-            Ver ranking completo →
+      {/* Ranking table */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-bold text-lg">Tabla de posiciones</h2>
+          <Link href={`/groups/${id}/rankings`} className="text-[#C8102E] text-sm hover:underline">
+            Ver completo →
           </Link>
-        </section>
-      )}
+        </div>
 
-      {/* Next match */}
-      {nextMatch && (
-        <section>
-          <h2 className="font-bold text-lg mb-4">Próximo partido</h2>
-          <Link
-            href={`/groups/${id}/matches`}
-            className="bg-[#1A1A2E] hover:bg-[#16213E] rounded-xl p-4 border border-[#2A2D4A] transition-colors block"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{(nextMatch.home_team as any)?.flag_emoji ?? '🏳️'}</span>
-                <span className="font-medium">{(nextMatch.home_team as any)?.name ?? 'Por definir'}</span>
-                <span className="text-[#8B8FA8] text-sm">vs</span>
-                <span className="font-medium">{(nextMatch.away_team as any)?.name ?? 'Por definir'}</span>
-                <span className="text-2xl">{(nextMatch.away_team as any)?.flag_emoji ?? '🏳️'}</span>
-              </div>
-              <span className="text-[#C8102E] text-sm font-bold">Predecir →</span>
+        {rankingError ? (
+          <div className="bg-[#1A1A2E] rounded-xl p-4 border border-[#C8102E]/30 text-[#C8102E] text-sm">
+            Error cargando ranking. Ejecutá las migraciones SQL pendientes.
+          </div>
+        ) : ranking.length === 0 ? (
+          <div className="bg-[#1A1A2E] rounded-xl p-6 border border-[#2A2D4A] text-center text-[#8B8FA8] text-sm">
+            Todavía nadie tiene puntos. ¡Cargá predicciones!
+          </div>
+        ) : (
+          <div className="bg-[#1A1A2E] rounded-2xl border border-[#2A2D4A] overflow-hidden">
+            {/* Header */}
+            <div className="grid grid-cols-[2.5rem_1fr_auto_auto] gap-3 px-4 py-2 text-[#8B8FA8] text-xs font-medium uppercase tracking-wide border-b border-[#2A2D4A]">
+              <span>#</span>
+              <span>Jugador</span>
+              <span className="text-right">Pts</span>
+              <span className="text-right pr-1">✓</span>
             </div>
-            {nextMatch.match_date && (
-              <p className="text-[#8B8FA8] text-xs mt-2">
-                {new Date(nextMatch.match_date).toLocaleDateString('es-AR', {
-                  weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
-                })}
-              </p>
-            )}
-          </Link>
-        </section>
-      )}
+
+            {ranking.map((row, i) => {
+              const isMe = row.user_id === user!.id
+              return (
+                <div
+                  key={row.user_id}
+                  className={`grid grid-cols-[2.5rem_1fr_auto_auto] gap-3 items-center px-4 py-3 border-b border-[#2A2D4A]/40 last:border-0 transition-colors ${
+                    isMe ? 'bg-[#C8102E]/10' : 'hover:bg-[#16213E]'
+                  }`}
+                >
+                  <span className={`font-black text-sm ${
+                    i === 0 ? 'text-[#FFD700]' : i === 1 ? 'text-[#C0C0C0]' : i === 2 ? 'text-[#CD7F32]' : 'text-[#8B8FA8]'
+                  }`}>
+                    {i < 3 ? medals[i] : `${i + 1}`}
+                  </span>
+
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      {(row.display_name ?? row.username)[0].toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium truncate">
+                      {row.display_name ?? row.username}
+                      {isMe && <span className="text-[#8B8FA8] ml-1 text-xs">(vos)</span>}
+                    </span>
+                  </div>
+
+                  <span className="font-black text-[#FFB81C] text-sm">{row.total_points}</span>
+                  <span className="text-[#8B8FA8] text-xs pr-1">{row.correct_predictions}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
