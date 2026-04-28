@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
 import MatchList from '@/components/matches/MatchList'
 import ExtrasSection from './ExtrasSection'
+import ImportPredictionsButton from './ImportPredictionsButton'
 import type { Match, Prediction, Team, SpecialPrediction } from '@/types'
 import {
   simulateGroupStandings,
@@ -28,7 +29,7 @@ export default async function GroupMatchesPage({ params }: Props) {
 
   if (!membership) redirect('/dashboard')
 
-  const [matchesRes, teamsRes, predictionsRes, groupRes, specialRes] = await Promise.all([
+  const [matchesRes, teamsRes, predictionsRes, groupRes, specialRes, otherGroupsRes] = await Promise.all([
     supabase
       .from('matches')
       .select('*, home_team:home_team_id(id, name, code, flag_emoji, group_code), away_team:away_team_id(id, name, code, flag_emoji, group_code)')
@@ -50,6 +51,12 @@ export default async function GroupMatchesPage({ params }: Props) {
       .eq('user_id', user!.id)
       .eq('group_id', groupId)
       .maybeSingle(),
+    // Otros grupos del usuario con sus predicciones
+    supabase
+      .from('group_members')
+      .select('group_id, group:groups(id, name, public_id)')
+      .eq('user_id', user!.id)
+      .neq('group_id', groupId),
   ])
 
   const matches = (matchesRes.data ?? []) as unknown as Match[]
@@ -57,6 +64,25 @@ export default async function GroupMatchesPage({ params }: Props) {
   const predictions = predictionsRes.data ?? []
   const group = groupRes.data
   const special = specialRes.data
+
+  // Otros grupos con al menos una predicción (contar en paralelo)
+  const otherMemberships = otherGroupsRes.data ?? []
+  const otherGroupCounts = await Promise.all(
+    otherMemberships.map(async m => {
+      const { count } = await supabase
+        .from('predictions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user!.id)
+        .eq('group_id', m.group_id)
+      return {
+        id: m.group_id,
+        name: (m.group as any)?.name ?? m.group_id,
+        public_id: (m.group as any)?.public_id ?? '',
+        count: count ?? 0,
+      }
+    })
+  )
+  const sourceGroups = otherGroupCounts.filter(g => g.count > 0)
 
   const predictionMap = new Map<string, Prediction>()
   predictions.forEach(p => predictionMap.set(p.match_id, p as unknown as Prediction))
@@ -74,6 +100,12 @@ export default async function GroupMatchesPage({ params }: Props) {
   return (
     <div>
       <h1 className="text-2xl font-black mb-6">Tus predicciones</h1>
+
+      {/* Importar predicciones de otro grupo */}
+      <ImportPredictionsButton
+        targetGroupId={groupId}
+        sourceGroups={sourceGroups}
+      />
 
       {/* Extras: goleador, asistidor, MVP */}
       {hasExtras && (
