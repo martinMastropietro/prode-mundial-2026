@@ -3,18 +3,29 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { isMatchClosed, formatMatchDate } from '@/lib/utils/dates'
 import { savePrediction } from '@/app/(app)/groups/[id]/matches/actions'
-import type { Match, Prediction } from '@/types'
+import type { Match, Prediction, Team } from '@/types'
 
 type Props = {
   match: Match
   prediction?: Prediction
   groupId: string
+  projectedHome?: Team
+  projectedAway?: Team
+  projectedHomeLabel?: string
+  projectedAwayLabel?: string
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-export default function MatchCard({ match, prediction, groupId }: Props) {
+export default function MatchCard({
+  match, prediction, groupId,
+  projectedHome, projectedAway,
+  projectedHomeLabel, projectedAwayLabel,
+}: Props) {
   const closed = isMatchClosed(match.match_date, match.status)
+  // Partido de eliminatoria sin equipos definidos aún
+  const teamsUnknown = !match.home_team_id && match.phase !== 'group'
+
   const [homeGoals, setHomeGoals] = useState(prediction?.predicted_home_score?.toString() ?? '')
   const [awayGoals, setAwayGoals] = useState(prediction?.predicted_away_score?.toString() ?? '')
   const [status, setStatus] = useState<SaveStatus>('idle')
@@ -81,8 +92,15 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
         <div className="flex items-center gap-4">
           {/* Home */}
           <div className="flex-1 flex items-center gap-2 justify-end">
-            <span className="font-medium text-sm text-right leading-tight">{homeTeam?.name ?? 'Por definir'}</span>
-            <span className="text-2xl flex-shrink-0">{homeTeam?.flag_emoji ?? '🏳️'}</span>
+            <div className="text-right">
+              <span className={`font-medium text-sm leading-tight ${!homeTeam && projectedHome ? 'text-[#6699ff]' : ''}`}>
+                {homeTeam?.name ?? projectedHome?.name ?? projectedHomeLabel ?? 'Por definir'}
+              </span>
+              {!homeTeam && projectedHome && (
+                <div className="text-[10px] text-[#6699ff]">{projectedHomeLabel}</div>
+              )}
+            </div>
+            <span className="text-2xl flex-shrink-0">{homeTeam?.flag_emoji ?? projectedHome?.flag_emoji ?? '🏳️'}</span>
           </div>
 
           {/* Score */}
@@ -93,6 +111,8 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
                 <span className="text-[#8B8FA8]">-</span>
                 <span>{match.away_score_full ?? match.away_score ?? '-'}</span>
               </div>
+            ) : teamsUnknown ? (
+              <span className="text-[#8B8FA8] text-sm">vs</span>
             ) : closed ? (
               <div className="flex items-center gap-1 text-lg font-bold text-[#8B8FA8]">
                 <span>{prediction?.predicted_home_score ?? '-'}</span>
@@ -122,8 +142,15 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
 
           {/* Away */}
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-2xl flex-shrink-0">{awayTeam?.flag_emoji ?? '🏳️'}</span>
-            <span className="font-medium text-sm leading-tight">{awayTeam?.name ?? 'Por definir'}</span>
+            <span className="text-2xl flex-shrink-0">{awayTeam?.flag_emoji ?? projectedAway?.flag_emoji ?? '🏳️'}</span>
+            <div>
+              <span className={`font-medium text-sm leading-tight ${!awayTeam && projectedAway ? 'text-[#6699ff]' : ''}`}>
+                {awayTeam?.name ?? projectedAway?.name ?? projectedAwayLabel ?? 'Por definir'}
+              </span>
+              {!awayTeam && projectedAway && (
+                <div className="text-[10px] text-[#6699ff]">{projectedAwayLabel}</div>
+              )}
+            </div>
           </div>
         </div>
 

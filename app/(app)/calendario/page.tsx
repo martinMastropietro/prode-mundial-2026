@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import CalendarioClient from './CalendarioClient'
 import type { Match, Prediction, Team } from '@/types'

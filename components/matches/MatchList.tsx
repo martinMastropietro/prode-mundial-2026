@@ -4,17 +4,20 @@ import { useState } from 'react'
 import MatchCard from './MatchCard'
 import type { Match, Prediction } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
+import type { ProjectedQualifiers } from '@/lib/utils/simulate'
+import { R32_BRACKET, SLOT_LABELS } from '@/lib/utils/simulate'
 
 type Props = {
   matches: Match[]
   predictionMap: Map<string, Prediction>
   groupId: string
+  projectedQualifiers?: ProjectedQualifiers
 }
 
 const PHASE_ORDER = ['group', 'round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'third_place', 'final']
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
-export default function MatchList({ matches, predictionMap, groupId }: Props) {
+export default function MatchList({ matches, predictionMap, groupId, projectedQualifiers }: Props) {
   const [selectedPhase, setSelectedPhase] = useState<string>('group')
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
 
@@ -108,13 +111,29 @@ export default function MatchList({ matches, predictionMap, groupId }: Props) {
                 </div>
               )}
               <div className="space-y-3">
-                {items.map(match => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    prediction={predictionMap.get(match.id)}
-                    groupId={groupId}
-                  />
+                {items.map(match => {
+                  // Para partidos de eliminatoria sin equipos asignados, calcular proyectados
+                  const slots = match.phase !== 'group' && !match.home_team_id
+                    ? R32_BRACKET[match.match_number]
+                    : null
+                  const projHome = slots ? projectedQualifiers?.get(slots[0]) : undefined
+                  const projAway = slots ? projectedQualifiers?.get(slots[1]) : undefined
+                  const projHomeLabel = slots ? SLOT_LABELS[slots[0]] : undefined
+                  const projAwayLabel = slots ? SLOT_LABELS[slots[1]] : undefined
+
+                  return (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      prediction={predictionMap.get(match.id)}
+                      groupId={groupId}
+                      projectedHome={projHome}
+                      projectedAway={projAway}
+                      projectedHomeLabel={projHomeLabel}
+                      projectedAwayLabel={projAwayLabel}
+                    />
+                  )
+                }}
                 ))}
               </div>
             </div>
