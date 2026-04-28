@@ -5,26 +5,32 @@ import type { MatchProjection, ProjectedQualifiers } from '@/lib/utils/simulate'
 type BracketMatch = Match & { slotLabel: string }
 
 // ─── ORDEN VISUAL CORRECTO DEL BRACKET ────────────────────────────────────────
-// Garantiza que cada par de partidos que alimenta el mismo partido siguiente
-// quede visualmente adyacente (árbol consistente).
+// Principio: cada SF toma sus dos QF del MISMO LADO del bracket.
+// Trazar el árbol completo desde la Final hacia atrás:
 //
-// Derivado del fixture oficial FIFA 2026:
-//   Oct 90 = W73+W75  → R32 left pair 1: [73,75]
-//   Oct 89 = W74+W77  → R32 left pair 2: [74,77]
-//   Oct 91 = W76+W78  → R32 left pair 3: [76,78]
-//   Oct 92 = W79+W80  → R32 left pair 4: [79,80]
-//   Oct 94 = W81+W82  → R32 right pair 1: [81,82]
-//   Oct 93 = W83+W84  → R32 right pair 2: [83,84]
-//   Oct 96 = W85+W87  → R32 right pair 3: [85,87]
-//   Oct 95 = W86+W88  → R32 right pair 4: [86,88]
+//  SF 101 = W97 + W98  → ambos QF van al lado IZQUIERDO
+//    QF 97 = W(Oct89) + W(Oct90)   → Octavos izquierdos
+//    QF 98 = W(Oct93) + W(Oct94)   → Octavos izquierdos
+//      Oct 90 = W73+W75            → R32 izquierdos
+//      Oct 89 = W74+W77            → R32 izquierdos
+//      Oct 94 = W81+W82            → R32 izquierdos
+//      Oct 93 = W83+W84            → R32 izquierdos
+//
+//  SF 102 = W99 + W100 → ambos QF van al lado DERECHO
+//    QF 99  = W(Oct91) + W(Oct92)  → Octavos derechos
+//    QF 100 = W(Oct95) + W(Oct96)  → Octavos derechos
+//      Oct 91 = W76+W78            → R32 derechos
+//      Oct 92 = W79+W80            → R32 derechos
+//      Oct 95 = W86+W88            → R32 derechos
+//      Oct 96 = W85+W87            → R32 derechos
 
 const BRACKET_ORDER = {
-  r32L:  [73, 75, 74, 77, 76, 78, 79, 80],
-  r32R:  [81, 82, 83, 84, 85, 87, 86, 88],
-  r16L:  [90, 89, 91, 92],
-  r16R:  [94, 93, 96, 95],
-  qfL:   [97, 99],
-  qfR:   [98, 100],
+  r32L:  [73, 75,  74, 77,  81, 82,  83, 84],  // → Oct 90,89,94,93 → QF 97,98 → SF 101
+  r32R:  [76, 78,  79, 80,  86, 88,  85, 87],  // → Oct 91,92,95,96 → QF 99,100 → SF 102
+  r16L:  [90, 89,  94, 93],                     // pares: 90+89→QF97, 94+93→QF98
+  r16R:  [91, 92,  96, 95],                     // pares: 91+92→QF99, 96+95→QF100
+  qfL:   [97, 98],                              // → SF 101
+  qfR:   [99, 100],                             // → SF 102
   sfL:   [101],
   sfR:   [102],
 }
