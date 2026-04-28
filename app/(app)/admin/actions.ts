@@ -53,12 +53,28 @@ function calculatePredictionPoints(
   return basePoints + bonus
 }
 
-export async function saveMatchResult(formData: FormData) {
+async function requireAdminClient() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Solo el admin puede usar esta action
-  if (!user || user.email !== process.env.ADMIN_EMAIL) return
+  if (!user || user.email !== process.env.ADMIN_EMAIL) return null
+
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
+function revalidateAdminResultViews() {
+  revalidatePath('/admin')
+  revalidatePath('/calendario')
+  revalidatePath('/dashboard')
+  revalidatePath('/', 'layout')
+}
+
+export async function saveMatchResult(formData: FormData) {
+  const admin = await requireAdminClient()
+  if (!admin) return
 
   const matchId    = formData.get('match_id') as string
   const homeScore  = parseInt(formData.get('home_score') as string, 10)
@@ -68,12 +84,6 @@ export async function saveMatchResult(formData: FormData) {
   const penWinner  = formData.get('penalty_winner') as 'home' | 'away' | null
 
   if (isNaN(homeScore) || isNaN(awayScore)) return
-
-  // Usar service role para bypass de RLS (matches solo son modificables por admin)
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   const { data: match } = await admin
     .from('matches')
@@ -115,8 +125,37 @@ export async function saveMatchResult(formData: FormData) {
     ))
   }
 
-  revalidatePath('/admin')
-  revalidatePath('/calendario')
-  revalidatePath('/dashboard')
-  revalidatePath('/', 'layout')
+  revalidateAdminResultViews()
+}
+
+export async function clearMatchResult(formData: FormData) {
+  const admin = await requireAdminClient()
+  if (!admin) return
+
+  const matchId = formData.get('match_id') as string
+  if (!matchId) return
+
+  await admin
+    .from('matches')
+    .update({
+      home_score: null,
+      away_score: null,
+      home_score_full: null,
+      away_score_full: null,
+      went_to_extra_time: false,
+      went_to_penalties: false,
+      penalty_winner: null,
+      status: 'scheduled',
+    })
+    .eq('id', matchId)
+
+  await admin
+    .from('predictions')
+    .update({
+      points_earned: 0,
+      calculated_at: null,
+    })
+    .eq('match_id', matchId)
+
+  revalidateAdminResultViews()
 }

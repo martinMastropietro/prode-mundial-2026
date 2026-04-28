@@ -1,19 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { saveMatchResult } from './actions'
+import { useRouter } from 'next/navigation'
+import { clearMatchResult, saveMatchResult } from './actions'
 import type { Match } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
 
 function MatchResultRow({ match }: { match: Match }) {
+  const router = useRouter()
   const [homeScore, setHomeScore] = useState(match.home_score_full?.toString() ?? '')
   const [awayScore, setAwayScore] = useState(match.away_score_full?.toString() ?? '')
   const [et, setEt] = useState(match.went_to_extra_time)
   const [pens, setPens] = useState(match.went_to_penalties)
   const [penWinner, setPenWinner] = useState<'home' | 'away' | ''>(match.penalty_winner ?? '')
   const [saving, setSaving] = useState(false)
+  const [clearing, setClearing] = useState(false)
   const [saved, setSaved] = useState(false)
 
   const finished = match.status === 'finished'
@@ -33,7 +36,23 @@ function MatchResultRow({ match }: { match: Match }) {
     await saveMatchResult(fd)
     setSaved(true)
     setSaving(false)
+    router.refresh()
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleClear() {
+    if (!finished || clearing) return
+    setClearing(true)
+    const fd = new FormData()
+    fd.append('match_id', match.id)
+    await clearMatchResult(fd)
+    setHomeScore('')
+    setAwayScore('')
+    setEt(false)
+    setPens(false)
+    setPenWinner('')
+    setClearing(false)
+    router.refresh()
   }
 
   return (
@@ -95,7 +114,7 @@ function MatchResultRow({ match }: { match: Match }) {
         {/* Estado / Botón */}
         <button
           onClick={handleSave}
-          disabled={saving || homeScore === '' || awayScore === ''}
+          disabled={saving || clearing || homeScore === '' || awayScore === ''}
           className={`px-4 py-1.5 text-xs font-bold rounded-xl transition-colors ${
             saved
               ? 'bg-[#00A651]/20 text-[#00A651]'
@@ -104,6 +123,16 @@ function MatchResultRow({ match }: { match: Match }) {
         >
           {saved ? '✓ Guardado' : saving ? '...' : finished ? 'Actualizar resultado' : 'Marcar terminado'}
         </button>
+
+        {finished && (
+          <button
+            onClick={handleClear}
+            disabled={saving || clearing}
+            className="px-4 py-1.5 text-xs font-bold rounded-xl border border-[#2A2D4A] text-[#8B8FA8] hover:text-white hover:border-[#C8102E]/60 disabled:opacity-40 transition-colors"
+          >
+            {clearing ? 'Borrando...' : 'Borrar resultado'}
+          </button>
+        )}
       </div>
 
       {/* Info del partido terminado */}
