@@ -8,7 +8,7 @@ type GroupOpts = { has_top_scorer: boolean; has_top_assist: boolean; has_mvp: bo
 type OtherPrediction = SpecialPrediction & { group: { name: string; public_id: string } | null }
 
 type Props = {
-  teams: Team[]
+  teams?: Team[]
   existing: SpecialPrediction | null
   locked: boolean
   groupId: string
