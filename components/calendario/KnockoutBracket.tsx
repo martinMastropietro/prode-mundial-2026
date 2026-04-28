@@ -115,9 +115,10 @@ function RoundColumn({ label, matches, projectedQualifiers, projectedMatches }: 
   projectedMatches?: Record<number, MatchProjection>
 }) {
   return (
-    <div className="flex flex-col gap-1 flex-shrink-0">
+    <div className="flex flex-col flex-shrink-0" style={{ alignSelf: 'stretch' }}>
       <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider mb-2 text-center">{label}</div>
-      <div className="flex flex-col" style={{ gap: '8px', justifyContent: 'space-around' }}>
+      {/* flex-1 + space-evenly → cada match queda centrado frente a los dos que lo alimentan */}
+      <div className="flex flex-col flex-1" style={{ justifyContent: 'space-evenly' }}>
         {matches.map((m, i) => {
           const slots = m ? R32_BRACKET[m.match_number] : null
           const matchProjection = m ? projectedMatches?.[m.match_number] : undefined
@@ -185,14 +186,15 @@ export default function KnockoutBracket({
   return (
     <div className="overflow-x-auto pb-4">
       <div className="min-w-max">
-        <div className="flex items-stretch gap-3">
+        {/* min-height garantiza que el bracket tenga espacio suficiente para distribuirse */}
+        <div className="flex items-stretch gap-3" style={{ minHeight: '520px' }}>
           {hasR32 && <><RoundColumn label="32avos" matches={r32L} projectedQualifiers={projectedQualifiers} projectedMatches={projectedMatches} />{divider}</>}
           <RoundColumn label="Octavos" matches={r16L} projectedMatches={projectedMatches} />{divider}
           <RoundColumn label="Cuartos" matches={qfL} projectedMatches={projectedMatches} />{divider}
           <RoundColumn label="Semifinal" matches={sfL} projectedMatches={projectedMatches} />{divider}
 
-          {/* Center */}
-          <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4">
+          {/* Center — siempre verticalmente centrado */}
+          <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
             <div className="text-center mb-2">
               <div className="text-2xl mb-1">🏆</div>
               <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider">Final</div>
