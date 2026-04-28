@@ -3,22 +3,30 @@
 import { useState, useMemo } from 'react'
 import GroupStageView from '@/components/calendario/GroupStageView'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
-import type { Match } from '@/types'
+import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
+import type { Match, Prediction, Team } from '@/types'
+import { simulateGroupStandings } from '@/lib/utils/simulate'
 
 const TABS = [
-  { id: 'grupos', label: 'Fase de grupos' },
+  { id: 'partidos', label: 'Fase de grupos' },
+  { id: 'grupos', label: 'Grupos' },
   { id: 'eliminatorias', label: 'Cuadro eliminatorio' },
 ]
 
 type Props = {
   matches: Match[]
+  teams: Team[]
 }
 
-export default function CalendarioClient({ matches }: Props) {
-  const [tab, setTab] = useState('grupos')
+export default function CalendarioClient({ matches, teams }: Props) {
+  const [tab, setTab] = useState('partidos')
 
   const groupMatches    = useMemo(() => matches.filter(m => m.phase === 'group'), [matches])
   const knockoutMatches = useMemo(() => matches.filter(m => m.phase !== 'group'), [matches])
+  const officialStandings = useMemo(
+    () => simulateGroupStandings(matches, new Map<string, Prediction>(), teams),
+    [matches, teams]
+  )
 
   return (
     <div>
@@ -39,7 +47,13 @@ export default function CalendarioClient({ matches }: Props) {
         ))}
       </div>
 
-      {tab === 'grupos' && <GroupStageView matches={groupMatches} />}
+      {tab === 'partidos' && <GroupStageView matches={groupMatches} />}
+      {tab === 'grupos' && (
+        <GroupStandingsTables
+          title="Posiciones por grupo"
+          standings={officialStandings}
+        />
+      )}
       {tab === 'eliminatorias' && (
         <KnockoutBracket matches={knockoutMatches} />
       )}

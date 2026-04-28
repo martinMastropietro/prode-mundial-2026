@@ -11,13 +11,19 @@ type Props = {
   groupId: string
   projectedHome?: Team | null
   projectedAway?: Team | null
+  onPredictionChange?: (
+    matchId: string,
+    homeGoals: number | null,
+    awayGoals: number | null,
+    penaltyWinner: 'home' | 'away' | null
+  ) => void
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const isKnockout = (phase: string) => phase !== 'group'
 
-export default function MatchCard({ match, prediction, groupId, projectedHome, projectedAway }: Props) {
+export default function MatchCard({ match, prediction, groupId, projectedHome, projectedAway, onPredictionChange }: Props) {
   const closed = isMatchClosed(match.match_date, match.status)
   const knockout = isKnockout(match.phase)
 
@@ -66,6 +72,20 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
   }, [penWinner]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const inputClass = "w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
+  const updateHomeGoals = (value: string) => {
+    const clean = value.replace(/[^0-9]/g, '')
+    setHomeGoals(clean)
+    onPredictionChange?.(match.id, clean === '' ? null : Number(clean), awayGoals === '' ? null : Number(awayGoals), penWinner)
+  }
+  const updateAwayGoals = (value: string) => {
+    const clean = value.replace(/[^0-9]/g, '')
+    setAwayGoals(clean)
+    onPredictionChange?.(match.id, homeGoals === '' ? null : Number(homeGoals), clean === '' ? null : Number(clean), penWinner)
+  }
+  const updatePenaltyWinner = (value: 'home' | 'away' | null) => {
+    setPenWinner(value)
+    onPredictionChange?.(match.id, homeGoals === '' ? null : Number(homeGoals), awayGoals === '' ? null : Number(awayGoals), value)
+  }
 
   return (
     <div className={`bg-[#1A1A2E] rounded-xl border transition-colors ${
@@ -133,14 +153,14 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
                 <input
                   type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
                   value={homeGoals}
-                  onChange={e => setHomeGoals(e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={e => updateHomeGoals(e.target.value)}
                   className={inputClass} placeholder="0"
                 />
                 <span className="text-[#8B8FA8]">-</span>
                 <input
                   type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
                   value={awayGoals}
-                  onChange={e => setAwayGoals(e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={e => updateAwayGoals(e.target.value)}
                   className={inputClass} placeholder="0"
                 />
               </div>
@@ -169,7 +189,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => setPenWinner(penWinner === 'home' ? null : 'home')}
+                onClick={() => updatePenaltyWinner(penWinner === 'home' ? null : 'home')}
                 className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
                   penWinner === 'home'
                     ? 'bg-[#C8102E] text-white'
@@ -180,7 +200,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
                 <span>{homeTeam?.name}</span>
               </button>
               <button
-                onClick={() => setPenWinner(penWinner === 'away' ? null : 'away')}
+                onClick={() => updatePenaltyWinner(penWinner === 'away' ? null : 'away')}
                 className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
                   penWinner === 'away'
                     ? 'bg-[#C8102E] text-white'

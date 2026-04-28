@@ -10,12 +10,18 @@ type Props = {
   predictionMap: Map<string, Prediction>
   groupId: string
   bracketProjection?: Record<number, { home: Team | null; away: Team | null }>
+  onPredictionChange?: (
+    matchId: string,
+    homeGoals: number | null,
+    awayGoals: number | null,
+    penaltyWinner: 'home' | 'away' | null
+  ) => void
 }
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
-export default function MatchList({ matches, predictionMap, groupId, bracketProjection }: Props) {
+export default function MatchList({ matches, predictionMap, groupId, bracketProjection, onPredictionChange }: Props) {
   const [selectedPhase, setSelectedPhase] = useState<string>('group')
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
 
@@ -106,6 +112,7 @@ export default function MatchList({ matches, predictionMap, groupId, bracketProj
                       groupId={groupId}
                       projectedHome={proj?.home ?? undefined}
                       projectedAway={proj?.away ?? undefined}
+                      onPredictionChange={onPredictionChange}
                     />
                   )
                 })}

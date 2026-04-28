@@ -1,15 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import KnockoutBracket from '@/components/calendario/KnockoutBracket'
-import MatchList from '@/components/matches/MatchList'
 import ExtrasSection from './ExtrasSection'
 import ImportPredictionsButton from './ImportPredictionsButton'
+import PredictionsPanel from './PredictionsPanel'
 import type { Match, Prediction, Team, SpecialPrediction } from '@/types'
-import {
-  simulateGroupStandings,
-  buildProjectedQualifiers,
-  buildFullBracketProjection,
-} from '@/lib/utils/simulate'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -87,13 +81,6 @@ export default async function GroupMatchesPage({ params }: Props) {
   const predictionMap = new Map<string, Prediction>()
   predictions.forEach(p => predictionMap.set(p.match_id, p as unknown as Prediction))
 
-  const standings = simulateGroupStandings(matches, predictionMap, teams)
-  const qualifiers = buildProjectedQualifiers(standings)
-  const bracketProjection = buildFullBracketProjection(qualifiers, matches, predictionMap)
-
-  const bracketProjectionObj: Record<number, { home: Team | null; away: Team | null }> = {}
-  for (const [k, v] of bracketProjection) bracketProjectionObj[k] = v
-
   const hasExtras = group?.has_top_scorer || group?.has_top_assist || group?.has_mvp
   const locked = new Date() >= LOCK_DATE
 
@@ -117,24 +104,11 @@ export default async function GroupMatchesPage({ params }: Props) {
         />
       )}
 
-      {/* Bracket */}
-      <section className="mb-8">
-        <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
-          ⚡ Cuadro proyectado desde tus predicciones — se actualiza automáticamente
-        </div>
-        <KnockoutBracket
-          matches={matches.filter(m => m.phase !== 'group')}
-          projectedQualifiers={qualifiers}
-          projectedMatches={bracketProjectionObj}
-        />
-      </section>
-
-      {/* Predicciones partido a partido */}
-      <MatchList
+      <PredictionsPanel
         matches={matches}
-        predictionMap={predictionMap}
+        teams={teams}
         groupId={groupId}
-        bracketProjection={bracketProjectionObj}
+        initialPredictions={Object.fromEntries(predictionMap)}
       />
     </div>
   )
