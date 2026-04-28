@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #C8102E;
-  --secondary: #003087;
-  --accent: #FFB81C;
-  --purple: #7B2D8B;
-  --green: #00A651;
-  --bg-dark: #0D0D1A;
-  --bg-card: #1A1A2E;
-  --bg-surface: #16213E;
-  --text: #F5F5F5;
-  --muted: #8B8FA8;
-  --border: #2A2D4A;
-  --background: #0D0D1A;
-  --foreground: #F5F5F5;
+  --primary:    #C8102E;
+  --secondary:  #003087;
+  --accent:     #FFB81C;
+  --gold:       #FFD700;
+  --purple:     #7B2D8B;
+  --green:      #00A651;
+  --bg-dark:    #0A0A16;
+  --bg-card:    #14142A;
+  --bg-surface: #1A1A2E;
+  --text:       #F0F0F5;
+  --muted:      #8B8FA8;
+  --border:     #252540;
+  --background: #0A0A16;
+  --foreground: #F0F0F5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --color-card: var(--bg-card);
-  --color-surface: var(--bg-surface);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
+  --color-primary:    var(--primary);
+  --color-secondary:  var(--secondary);
+  --color-accent:     var(--accent);
+  --color-card:       var(--bg-card);
+  --color-surface:    var(--bg-surface);
+  --color-muted:      var(--muted);
+  --color-border:     var(--border);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
@@ -37,17 +37,12 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-card);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-card); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Thin rainbow top bar */
+.rainbow-top {
+  background: linear-gradient(90deg, #C8102E, #FFB81C, #00A651, #003087, #7B2D8B, #C8102E);
 }

@@ -76,7 +76,6 @@ export default async function GroupHomePage({ params }: Props) {
         {[
           { href: `/groups/${id}/matches`,   icon: '⚽', label: 'Predicciones' },
           { href: `/groups/${id}/rankings`,  icon: '🏆', label: 'Ranking' },
-          { href: `/groups/${id}/special`,   icon: '⭐', label: 'Especial' },
           membership.role === 'admin'
             ? { href: `/groups/${id}/settings`, icon: '⚙️', label: 'Config' }
             : { href: `/groups/${id}/matches`,  icon: '📅', label: 'Predecir' },
