@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const navItems = [
   { href: '/dashboard', label: 'Inicio', icon: '🏠' },
-  { href: '/groups/join', label: 'Buscar', icon: '🔍' },
+  { href: '/calendario', label: 'Calendario', icon: '📅' },
   { href: '/groups/create', label: 'Crear', icon: '➕' },
   { href: '/profile', label: 'Perfil', icon: '👤' },
 ]

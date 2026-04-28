@@ -19,6 +19,9 @@ export default function Navbar({ profile }: Props) {
           <Link href="/dashboard" className="text-[#8B8FA8] hover:text-white transition-colors">
             Inicio
           </Link>
+          <Link href="/calendario" className="text-[#8B8FA8] hover:text-white transition-colors">
+            Calendario
+          </Link>
           <Link href="/groups/join" className="text-[#8B8FA8] hover:text-white transition-colors">
             Unirse
           </Link>
