@@ -30,7 +30,7 @@ export async function saveMatchResult(formData: FormData) {
     .from('matches')
     .update({
       home_score:          homeScore,
-      away_score:          homeScore, // resultado al 90'
+      away_score:          awayScore,
       home_score_full:     homeScore,
       away_score_full:     awayScore,
       went_to_extra_time:  wentToET,
@@ -43,4 +43,5 @@ export async function saveMatchResult(formData: FormData) {
   revalidatePath('/admin')
   revalidatePath('/calendario')
   revalidatePath('/dashboard')
+  revalidatePath('/', 'layout')
 }

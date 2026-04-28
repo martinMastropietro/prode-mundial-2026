@@ -24,7 +24,7 @@ export default async function AdminPage() {
         <span className="px-2 py-0.5 bg-[#C8102E]/20 text-[#C8102E] text-xs font-bold rounded-full">ADMIN</span>
       </div>
       <p className="text-[#8B8FA8] text-sm mb-6">
-        Cargá el resultado de cada partido. Al marcar como "Terminado", los puntos se calculan automáticamente para todos los grupos.
+        Cargá el resultado de cada partido. Al marcar como &quot;Terminado&quot;, los puntos se calculan automáticamente para todos los grupos.
       </p>
       <AdminMatchList matches={(matches ?? []) as unknown as Match[]} />
     </div>

@@ -37,7 +37,7 @@ function MatchResultRow({ match }: { match: Match }) {
   }
 
   return (
-    <div className={`p-4 border-b border-[#2A2D4A]/50 last:border-0 ${finished ? 'opacity-60' : ''}`}>
+    <div className="p-4 border-b border-[#2A2D4A]/50 last:border-0">
       <div className="flex items-center gap-3 flex-wrap">
         {/* Partido */}
         <div className="flex items-center gap-2 flex-1 min-w-48">
@@ -54,8 +54,7 @@ function MatchResultRow({ match }: { match: Match }) {
             type="text" inputMode="numeric" maxLength={2}
             value={homeScore}
             onChange={e => setHomeScore(e.target.value.replace(/[^0-9]/g, ''))}
-            disabled={finished}
-            className="w-10 h-9 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold text-sm focus:outline-none focus:border-[#C8102E] disabled:opacity-50"
+            className="w-10 h-9 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold text-sm focus:outline-none focus:border-[#C8102E]"
             placeholder="0"
           />
           <span className="text-[#8B8FA8]">-</span>
@@ -63,14 +62,13 @@ function MatchResultRow({ match }: { match: Match }) {
             type="text" inputMode="numeric" maxLength={2}
             value={awayScore}
             onChange={e => setAwayScore(e.target.value.replace(/[^0-9]/g, ''))}
-            disabled={finished}
-            className="w-10 h-9 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold text-sm focus:outline-none focus:border-[#C8102E] disabled:opacity-50"
+            className="w-10 h-9 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold text-sm focus:outline-none focus:border-[#C8102E]"
             placeholder="0"
           />
         </div>
 
         {/* Opciones eliminatoria */}
-        {isKnockout && !finished && (
+        {isKnockout && (
           <div className="flex items-center gap-3 text-xs">
             <label className="flex items-center gap-1 cursor-pointer">
               <input type="checkbox" checked={et} onChange={e => setEt(e.target.checked)} className="accent-[#C8102E]" />
@@ -95,21 +93,17 @@ function MatchResultRow({ match }: { match: Match }) {
         )}
 
         {/* Estado / Botón */}
-        {finished ? (
-          <span className="text-xs text-[#00A651] font-bold">✓ Cargado</span>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={saving || homeScore === '' || awayScore === ''}
-            className={`px-4 py-1.5 text-xs font-bold rounded-xl transition-colors ${
-              saved
-                ? 'bg-[#00A651]/20 text-[#00A651]'
-                : 'bg-[#C8102E] hover:bg-[#a50d26] text-white disabled:opacity-40'
-            }`}
-          >
-            {saved ? '✓ Guardado' : saving ? '...' : 'Marcar terminado'}
-          </button>
-        )}
+        <button
+          onClick={handleSave}
+          disabled={saving || homeScore === '' || awayScore === ''}
+          className={`px-4 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+            saved
+              ? 'bg-[#00A651]/20 text-[#00A651]'
+              : 'bg-[#C8102E] hover:bg-[#a50d26] text-white disabled:opacity-40'
+          }`}
+        >
+          {saved ? '✓ Guardado' : saving ? '...' : finished ? 'Actualizar resultado' : 'Marcar terminado'}
+        </button>
       </div>
 
       {/* Info del partido terminado */}
