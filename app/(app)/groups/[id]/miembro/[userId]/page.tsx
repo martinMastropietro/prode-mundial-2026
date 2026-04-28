@@ -36,7 +36,7 @@ export default async function MemberPredictionPage({ params }: Props) {
 
   if (!targetMembership) notFound()
 
-  const targetProfile = targetMembership.profile as { username: string; display_name: string | null } | null
+  const targetProfile = targetMembership.profile as unknown as { username: string; display_name: string | null } | null
   const targetName = targetProfile?.display_name ?? targetProfile?.username ?? 'Usuario'
   const isOwnProfile = targetUserId === user!.id
 
