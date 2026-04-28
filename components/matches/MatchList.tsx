@@ -16,14 +16,29 @@ type Props = {
     awayGoals: number | null,
     penaltyWinner: 'home' | 'away' | null
   ) => void
+  selectedGroup?: string
+  onSelectedGroupChange?: (group: string) => void
 }
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
-export default function MatchList({ matches, predictionMap, groupId, bracketProjection, onPredictionChange }: Props) {
+export default function MatchList({
+  matches,
+  predictionMap,
+  groupId,
+  bracketProjection,
+  onPredictionChange,
+  selectedGroup: controlledSelectedGroup,
+  onSelectedGroupChange,
+}: Props) {
   const [selectedPhase, setSelectedPhase] = useState<string>('group')
-  const [selectedGroup, setSelectedGroup] = useState<string>('all')
+  const [internalSelectedGroup, setInternalSelectedGroup] = useState<string>('all')
+  const selectedGroup = controlledSelectedGroup ?? internalSelectedGroup
+  const setSelectedGroup = (group: string) => {
+    setInternalSelectedGroup(group)
+    onSelectedGroupChange?.(group)
+  }
 
   const phases = PHASE_ORDER.filter(p => matches.some(m => m.phase === p))
   const isGroupPhase = selectedPhase === 'group'

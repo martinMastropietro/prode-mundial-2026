@@ -22,6 +22,7 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
   const [predictionMap, setPredictionMap] = useState(
     () => new Map<string, Prediction>(Object.entries(initialPredictions))
   )
+  const [selectedGroup, setSelectedGroup] = useState('all')
 
   const standings = useMemo(
     () => simulateGroupStandings(matches, predictionMap, teams),
@@ -75,8 +76,9 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
     <>
       <div className="mb-8">
         <GroupStandingsTables
-          title="Tabla proyectada"
+          title={selectedGroup === 'all' ? 'Tabla proyectada' : `Tabla proyectada · Grupo ${selectedGroup}`}
           standings={standings}
+          groupFilter={selectedGroup === 'all' ? null : selectedGroup}
           compact
         />
       </div>
@@ -98,6 +100,8 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
         groupId={groupId}
         bracketProjection={bracketProjectionObj}
         onPredictionChange={updatePrediction}
+        selectedGroup={selectedGroup}
+        onSelectedGroupChange={setSelectedGroup}
       />
     </>
   )

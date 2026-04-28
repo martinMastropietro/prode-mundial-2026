@@ -4,12 +4,14 @@ type Props = {
   standings: Map<string, Standing[]>
   title?: string
   compact?: boolean
+  groupFilter?: string | null
 }
 
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
-export default function GroupStandingsTables({ standings, title, compact = false }: Props) {
+export default function GroupStandingsTables({ standings, title, compact = false, groupFilter }: Props) {
   const groups = GROUPS
+    .filter(group => !groupFilter || group === groupFilter)
     .map(group => ({ group, rows: standings.get(group) ?? [] }))
     .filter(({ rows }) => rows.length > 0)
 
@@ -23,10 +25,22 @@ export default function GroupStandingsTables({ standings, title, compact = false
               <h3 className="text-[#FFB81C] text-sm font-black uppercase tracking-widest">Grupo {group}</h3>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[520px] text-sm">
+              <table className="w-full min-w-[640px] table-fixed text-sm">
+                <colgroup>
+                  <col className="w-12" />
+                  <col />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                  <col className="w-16" />
+                </colgroup>
                 <thead>
                   <tr className="text-[#8B8FA8] border-b border-[#2A2D4A]">
-                    <th className="w-10 px-3 py-2 text-left">#</th>
+                    <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">País</th>
                     <th className="px-2 py-2 text-center">Pts</th>
                     <th className="px-2 py-2 text-center">PJ</th>
