@@ -133,8 +133,7 @@ export default function MatchList({ matches, predictionMap, groupId, projectedQu
                       projectedAwayLabel={projAwayLabel}
                     />
                   )
-                }}
-                ))}
+                })}
               </div>
             </div>
           ))
