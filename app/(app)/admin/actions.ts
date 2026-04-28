@@ -4,6 +4,55 @@ import { revalidatePath } from 'next/cache'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
+type PredictionRow = {
+  id: string
+  predicted_home_score: number
+  predicted_away_score: number
+  predicted_penalty_winner: 'home' | 'away' | null
+}
+
+function getWinner(home: number, away: number, penaltyWinner?: 'home' | 'away' | null) {
+  if (home > away) return 'home'
+  if (away > home) return 'away'
+  return penaltyWinner ?? 'draw'
+}
+
+function calculatePredictionPoints(
+  prediction: PredictionRow,
+  realHome: number,
+  realAway: number,
+  realPenaltyWinner: 'home' | 'away' | null,
+  matchNumber: number
+) {
+  const exactScore =
+    prediction.predicted_home_score === realHome &&
+    prediction.predicted_away_score === realAway &&
+    (!prediction.predicted_penalty_winner || prediction.predicted_penalty_winner === realPenaltyWinner)
+
+  const basePoints = exactScore
+    ? 5
+    : getWinner(
+        prediction.predicted_home_score,
+        prediction.predicted_away_score,
+        prediction.predicted_penalty_winner
+      ) === getWinner(realHome, realAway, realPenaltyWinner)
+        ? 3
+        : 0
+
+  const predictedWinner = getWinner(
+    prediction.predicted_home_score,
+    prediction.predicted_away_score,
+    prediction.predicted_penalty_winner
+  )
+  const realWinner = getWinner(realHome, realAway, realPenaltyWinner)
+
+  let bonus = 0
+  if (matchNumber === 104 && predictedWinner === realWinner) bonus = 25
+  if (matchNumber === 103 && predictedWinner === realWinner) bonus = 5
+
+  return basePoints + bonus
+}
+
 export async function saveMatchResult(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,7 +75,7 @@ export async function saveMatchResult(formData: FormData) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  await admin
+  const { data: match } = await admin
     .from('matches')
     .update({
       home_score:          homeScore,
@@ -39,6 +88,32 @@ export async function saveMatchResult(formData: FormData) {
       status:              'finished',
     })
     .eq('id', matchId)
+    .select('id, match_number')
+    .single()
+
+  if (match) {
+    const realPenaltyWinner = wentToPens && (penWinner === 'home' || penWinner === 'away') ? penWinner : null
+    const { data: predictions } = await admin
+      .from('predictions')
+      .select('id, predicted_home_score, predicted_away_score, predicted_penalty_winner')
+      .eq('match_id', match.id)
+
+    await Promise.all(((predictions ?? []) as PredictionRow[]).map(prediction =>
+      admin
+        .from('predictions')
+        .update({
+          points_earned: calculatePredictionPoints(
+            prediction,
+            homeScore,
+            awayScore,
+            realPenaltyWinner,
+            match.match_number
+          ),
+          calculated_at: new Date().toISOString(),
+        })
+        .eq('id', prediction.id)
+    ))
+  }
 
   revalidatePath('/admin')
   revalidatePath('/calendario')
