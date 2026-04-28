@@ -74,12 +74,12 @@ export default async function GroupHomePage({ params }: Props) {
       {/* Quick nav */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { href: `/groups/${id}/matches`,      icon: '⚽', label: 'Partidos' },
-          { href: `/groups/${id}/pronosticos`,  icon: '👁', label: 'Pronósticos' },
-          { href: `/groups/${id}/rankings`,     icon: '🏆', label: 'Ranking' },
+          { href: `/groups/${id}/matches`,   icon: '⚽', label: 'Predicciones' },
+          { href: `/groups/${id}/rankings`,  icon: '🏆', label: 'Ranking' },
+          { href: `/groups/${id}/special`,   icon: '⭐', label: 'Especial' },
           membership.role === 'admin'
             ? { href: `/groups/${id}/settings`, icon: '⚙️', label: 'Config' }
-            : { href: `/groups/${id}/special`,  icon: '⭐', label: 'Especial' },
+            : { href: `/groups/${id}/matches`,  icon: '📅', label: 'Predecir' },
         ].map((item) => (
           <Link
             key={item.href + item.label}

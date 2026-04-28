@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import type { RankingRow } from '@/types'
 
 type Props = { params: Promise<{ id: string }> }
@@ -20,7 +21,7 @@ export default async function GroupRankingPage({ params }: Props) {
 
   const { data: group } = await supabase
     .from('groups')
-    .select('name')
+    .select('name, predictions_visible')
     .eq('id', groupId)
     .single()
 
@@ -78,14 +79,14 @@ export default async function GroupRankingPage({ params }: Props) {
         {ranking.map((row, i) => (
           <div
             key={row.user_id}
-            className={`grid grid-cols-[2rem_1fr_4rem_4rem] gap-4 px-4 py-3 border-b border-[#2A2D4A]/50 last:border-0 ${
+            className={`grid grid-cols-[2rem_1fr_auto_4rem_4rem] gap-3 items-center px-4 py-3 border-b border-[#2A2D4A]/50 last:border-0 ${
               row.user_id === user!.id ? 'bg-[#C8102E]/10' : ''
             }`}
           >
             <span className={`font-black text-sm ${i < 3 ? medalColors[i] : 'text-[#8B8FA8]'}`}>
               {i + 1}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold text-xs shrink-0">
                 {(row.display_name ?? row.username)[0].toUpperCase()}
               </div>
@@ -94,6 +95,18 @@ export default async function GroupRankingPage({ params }: Props) {
                 {row.user_id === user!.id && <span className="text-[#8B8FA8] ml-1 text-xs">(vos)</span>}
               </span>
             </div>
+            {/* Ver predicciones — visible siempre (propias) o si predictions_visible=true */}
+            {(row.user_id === user!.id || group?.predictions_visible) && (
+              <Link
+                href={`/groups/${groupId}/miembro/${row.user_id}`}
+                className="text-xs text-[#6699ff] hover:text-white transition-colors whitespace-nowrap"
+              >
+                Ver →
+              </Link>
+            )}
+            {!(row.user_id === user!.id || group?.predictions_visible) && (
+              <span />
+            )}
             <span className="text-right font-bold text-[#FFB81C]">{row.total_points}</span>
             <span className="text-right text-[#8B8FA8] text-sm">{row.correct_predictions}</span>
           </div>
