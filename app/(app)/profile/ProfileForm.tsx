@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useActionState } from 'react'
 import { updateProfile } from './actions'
 
@@ -7,6 +8,7 @@ type Profile = {
   id: string
   username: string
   display_name: string | null
+  avatar_url: string | null
 }
 
 type Props = { profile: Profile | null; email: string }
@@ -16,14 +18,37 @@ export default function ProfileForm({ profile, email }: Props) {
 
   return (
     <div className="bg-[#1A1A2E] rounded-2xl p-6 border border-[#2A2D4A]">
-      {/* Avatar placeholder */}
       <div className="flex justify-center mb-6">
-        <div className="w-20 h-20 rounded-full bg-[#C8102E] flex items-center justify-center font-black text-3xl">
-          {(profile?.display_name ?? profile?.username ?? '?')[0].toUpperCase()}
+        <div className="relative w-24 h-24 rounded-full bg-[#C8102E] flex items-center justify-center font-black text-3xl overflow-hidden border border-[#2A2D4A]">
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt="Foto de perfil"
+              fill
+              sizes="96px"
+              className="object-cover"
+            />
+          ) : (
+            (profile?.display_name ?? profile?.username ?? '?')[0].toUpperCase()
+          )}
         </div>
       </div>
 
       <form action={action} className="space-y-4">
+        <div>
+          <label htmlFor="avatar" className="block text-sm font-medium mb-1">
+            Foto de perfil
+          </label>
+          <input
+            id="avatar"
+            name="avatar"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="w-full text-sm text-[#8B8FA8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#003087] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-[#0040b8]"
+          />
+          <p className="mt-1 text-xs text-[#8B8FA8]">JPG, PNG o WebP. Máximo 2 MB.</p>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">Email</label>
           <input

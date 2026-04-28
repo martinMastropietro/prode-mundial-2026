@@ -28,7 +28,7 @@ export default function Navbar({ profile, isAdmin }: Props) {
               <span className="text-[#C8102E]">PRO</span>
               <span className="text-white">DE</span>
             </div>
-            <div className="text-[#FFB81C] font-black text-xs tracking-widest">MUNDIAL '26</div>
+            <div className="text-[#FFB81C] font-black text-xs tracking-widest">MUNDIAL &apos;26</div>
           </div>
         </Link>
 
@@ -54,8 +54,18 @@ export default function Navbar({ profile, isAdmin }: Props) {
 
         <div className="flex items-center gap-3">
           <Link href="/profile" className="flex items-center gap-2 text-sm">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C8102E] to-[#7B2D8B] flex items-center justify-center font-bold text-xs shadow-lg">
-              {(profile?.display_name ?? profile?.username ?? '?')[0].toUpperCase()}
+            <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-[#C8102E] to-[#7B2D8B] flex items-center justify-center font-bold text-xs shadow-lg overflow-hidden">
+              {profile?.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt=""
+                  fill
+                  sizes="32px"
+                  className="object-cover"
+                />
+              ) : (
+                (profile?.display_name ?? profile?.username ?? '?')[0].toUpperCase()
+              )}
             </div>
             <span className="hidden sm:block text-[#8B8FA8] hover:text-white transition-colors">
               {profile?.display_name ?? profile?.username}
