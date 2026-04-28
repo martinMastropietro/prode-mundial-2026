@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { RankingRow } from '@/types'
 
@@ -55,8 +56,18 @@ export default async function GroupRankingPage({ params }: Props) {
                 <div className={`text-xl font-black ${medalColors[rank]}`}>
                   {actualRank === 1 ? '🥇' : actualRank === 2 ? '🥈' : '🥉'}
                 </div>
-                <div className="w-10 h-10 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold mx-auto my-2">
-                  {(row.display_name ?? row.username)[0].toUpperCase()}
+                <div className="relative w-10 h-10 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold mx-auto my-2 overflow-hidden">
+                  {row.avatar_url ? (
+                    <Image
+                      src={row.avatar_url}
+                      alt=""
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    (row.display_name ?? row.username)[0].toUpperCase()
+                  )}
                 </div>
                 <div className="text-xs font-medium truncate">{row.display_name ?? row.username}</div>
                 <div className={`font-black text-lg ${medalColors[rank]}`}>{row.total_points}</div>
@@ -87,8 +98,18 @@ export default async function GroupRankingPage({ params }: Props) {
               {i + 1}
             </span>
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold text-xs shrink-0">
-                {(row.display_name ?? row.username)[0].toUpperCase()}
+              <div className="relative w-7 h-7 rounded-full bg-[#2A2D4A] flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                {row.avatar_url ? (
+                  <Image
+                    src={row.avatar_url}
+                    alt=""
+                    fill
+                    sizes="28px"
+                    className="object-cover"
+                  />
+                ) : (
+                  (row.display_name ?? row.username)[0].toUpperCase()
+                )}
               </div>
               <span className="text-sm font-medium truncate">
                 {row.display_name ?? row.username}
