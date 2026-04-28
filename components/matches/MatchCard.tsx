@@ -117,19 +117,17 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
 
         {/* Save button */}
         {!closed && (
-          <div className="mt-3 flex justify-center">
-            <button
-              onClick={handleSave}
-              disabled={saving || !homeGoals || !awayGoals}
-              className={`px-6 py-2 text-sm font-bold rounded-xl transition-colors ${
-                saved
-                  ? 'bg-[#00A651]/20 text-[#00A651]'
-                  : 'bg-[#C8102E] hover:bg-[#a50d26] text-white disabled:opacity-40 disabled:cursor-not-allowed'
-              }`}
-            >
-              {saved ? '✓ Guardado' : saving ? 'Guardando...' : prediction ? 'Actualizar' : 'Guardar'}
-            </button>
-          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving || homeGoals === '' || awayGoals === ''}
+            className={`mt-4 w-full py-2 text-sm font-bold rounded-xl transition-colors ${
+              saved
+                ? 'bg-[#00A651]/20 text-[#00A651]'
+                : 'bg-[#C8102E] hover:bg-[#a50d26] text-white disabled:opacity-40 disabled:cursor-not-allowed'
+            }`}
+          >
+            {saved ? '✓ Guardado' : saving ? 'Guardando...' : prediction ? 'Actualizar' : 'Guardar'}
+          </button>
         )}
       </div>
     </div>
