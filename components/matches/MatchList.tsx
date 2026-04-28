@@ -2,29 +2,25 @@
 
 import { useState } from 'react'
 import MatchCard from './MatchCard'
-import type { Match, Prediction } from '@/types'
+import type { Match, Prediction, Team } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
-import type { ProjectedQualifiers } from '@/lib/utils/simulate'
-import { R32_BRACKET, SLOT_LABELS } from '@/lib/utils/simulate'
 
 type Props = {
   matches: Match[]
   predictionMap: Map<string, Prediction>
   groupId: string
-  projectedQualifiers?: ProjectedQualifiers
+  bracketProjection?: Record<number, { home: Team | null; away: Team | null }>
 }
 
-const PHASE_ORDER = ['group', 'round_of_32', 'round_of_16', 'quarterfinal', 'semifinal', 'third_place', 'final']
+const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
-export default function MatchList({ matches, predictionMap, groupId, projectedQualifiers }: Props) {
+export default function MatchList({ matches, predictionMap, groupId, bracketProjection }: Props) {
   const [selectedPhase, setSelectedPhase] = useState<string>('group')
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
 
   const phases = PHASE_ORDER.filter(p => matches.some(m => m.phase === p))
   const isGroupPhase = selectedPhase === 'group'
-
-  // Grupos disponibles dentro de la fase de grupos
   const availableGroups = isGroupPhase
     ? GROUPS.filter(g => matches.some(m => m.phase === 'group' && m.group_code === g))
     : []
@@ -35,15 +31,12 @@ export default function MatchList({ matches, predictionMap, groupId, projectedQu
     return true
   })
 
-  // Agrupar por grupo_code para la fase de grupos
-  const groupedMatches: { label: string; items: Match[] }[] = isGroupPhase && selectedGroup === 'all'
-    ? availableGroups
-        .map(g => ({
-          label: `Grupo ${g}`,
-          items: filtered.filter(m => m.group_code === g),
-        }))
-        .filter(g => g.items.length > 0)
-    : [{ label: '', items: filtered }]
+  const groupedMatches: { label: string; items: Match[] }[] =
+    isGroupPhase && selectedGroup === 'all'
+      ? availableGroups
+          .map(g => ({ label: `Grupo ${g}`, items: filtered.filter(m => m.group_code === g) }))
+          .filter(g => g.items.length > 0)
+      : [{ label: '', items: filtered }]
 
   return (
     <div>
@@ -64,7 +57,7 @@ export default function MatchList({ matches, predictionMap, groupId, projectedQu
         ))}
       </div>
 
-      {/* Group filter (solo en fase de grupos) */}
+      {/* Group filter */}
       {isGroupPhase && availableGroups.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
           <button
@@ -78,59 +71,41 @@ export default function MatchList({ matches, predictionMap, groupId, projectedQu
             Todos
           </button>
           {availableGroups.map(g => (
-            <button
-              key={g}
-              onClick={() => setSelectedGroup(g)}
+            <button key={g} onClick={() => setSelectedGroup(g)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors flex-shrink-0 ${
                 selectedGroup === g
                   ? 'bg-[#003087] text-white'
                   : 'bg-[#1A1A2E] text-[#8B8FA8] hover:text-white border border-[#2A2D4A]'
               }`}
-            >
-              {g}
-            </button>
+            >{g}</button>
           ))}
         </div>
       )}
 
-      {/* Matches grouped */}
+      {/* Matches */}
       <div className="space-y-6">
         {groupedMatches.length === 0 ? (
-          <p className="text-[#8B8FA8] text-sm text-center py-8">
-            No hay partidos en esta fase todavía.
-          </p>
+          <p className="text-[#8B8FA8] text-sm text-center py-8">No hay partidos en esta fase.</p>
         ) : (
           groupedMatches.map(({ label, items }) => (
-            <div key={label}>
+            <div key={label || 'main'}>
               {label && (
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-black text-[#FFB81C] tracking-widest uppercase">
-                    {label}
-                  </span>
+                  <span className="text-xs font-black text-[#FFB81C] tracking-widest uppercase">{label}</span>
                   <div className="flex-1 h-px bg-[#2A2D4A]" />
                 </div>
               )}
               <div className="space-y-3">
                 {items.map(match => {
-                  // Para partidos de eliminatoria sin equipos asignados, calcular proyectados
-                  const slots = match.phase !== 'group' && !match.home_team_id
-                    ? R32_BRACKET[match.match_number]
-                    : null
-                  const projHome = slots ? projectedQualifiers?.get(slots[0]) : undefined
-                  const projAway = slots ? projectedQualifiers?.get(slots[1]) : undefined
-                  const projHomeLabel = slots ? SLOT_LABELS[slots[0]] : undefined
-                  const projAwayLabel = slots ? SLOT_LABELS[slots[1]] : undefined
-
+                  const proj = bracketProjection?.[match.match_number]
                   return (
                     <MatchCard
                       key={match.id}
                       match={match}
                       prediction={predictionMap.get(match.id)}
                       groupId={groupId}
-                      projectedHome={projHome}
-                      projectedAway={projAway}
-                      projectedHomeLabel={projHomeLabel}
-                      projectedAwayLabel={projAwayLabel}
+                      projectedHome={proj?.home ?? undefined}
+                      projectedAway={proj?.away ?? undefined}
                     />
                   )
                 })}

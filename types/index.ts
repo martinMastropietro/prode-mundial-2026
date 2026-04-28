@@ -84,6 +84,7 @@ export type Prediction = {
   predicted_home_score: number
   predicted_away_score: number
   points_earned: number
+  predicted_penalty_winner: 'home' | 'away' | null
   calculated_at: string | null
   created_at: string
   updated_at: string | null

@@ -2,7 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import MatchList from '@/components/matches/MatchList'
 import type { Match, Prediction, Team } from '@/types'
-import { simulateGroupStandings, buildProjectedQualifiers } from '@/lib/utils/simulate'
+import {
+  simulateGroupStandings,
+  buildProjectedQualifiers,
+  buildFullBracketProjection,
+} from '@/lib/utils/simulate'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -40,9 +44,14 @@ export default async function GroupMatchesPage({ params }: Props) {
   const predictionMap = new Map<string, Prediction>()
   predictions.forEach(p => predictionMap.set(p.match_id, p as unknown as Prediction))
 
-  // Calcular clasificados proyectados desde las predicciones del usuario
+  // Calcular proyección completa: grupo → R32 → R16 → QF → SF → Final
   const standings = simulateGroupStandings(matches, predictionMap, teams)
-  const projectedQualifiers = buildProjectedQualifiers(standings)
+  const qualifiers = buildProjectedQualifiers(standings)
+  const bracketProjection = buildFullBracketProjection(qualifiers, matches, predictionMap)
+
+  // Serializar para pasar al cliente
+  const bracketProjectionObj: Record<number, { home: Team | null; away: Team | null }> = {}
+  for (const [k, v] of bracketProjection) bracketProjectionObj[k] = v
 
   return (
     <div>
@@ -51,7 +60,7 @@ export default async function GroupMatchesPage({ params }: Props) {
         matches={matches}
         predictionMap={predictionMap}
         groupId={groupId}
-        projectedQualifiers={projectedQualifiers}
+        bracketProjection={bracketProjectionObj}
       />
     </div>
   )
