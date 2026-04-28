@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
 import MatchList from '@/components/matches/MatchList'
-import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
 import type { Match, Prediction, Team } from '@/types'
 import {
   simulateGroupStandings,
@@ -22,7 +21,6 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
   const [predictionMap, setPredictionMap] = useState(
     () => new Map<string, Prediction>(Object.entries(initialPredictions))
   )
-  const [selectedGroup, setSelectedGroup] = useState('all')
 
   const standings = useMemo(
     () => simulateGroupStandings(matches, predictionMap, teams),
@@ -74,15 +72,6 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
 
   return (
     <>
-      <div className="mb-8">
-        <GroupStandingsTables
-          title={selectedGroup === 'all' ? 'Tabla proyectada' : `Tabla proyectada · Grupo ${selectedGroup}`}
-          standings={standings}
-          groupFilter={selectedGroup === 'all' ? null : selectedGroup}
-          compact
-        />
-      </div>
-
       <section className="mb-8">
         <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
           ⚡ Cuadro proyectado desde tus predicciones — se actualiza automáticamente
@@ -100,8 +89,7 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
         groupId={groupId}
         bracketProjection={bracketProjectionObj}
         onPredictionChange={updatePrediction}
-        selectedGroup={selectedGroup}
-        onSelectedGroupChange={setSelectedGroup}
+        groupStandings={standings}
       />
     </>
   )

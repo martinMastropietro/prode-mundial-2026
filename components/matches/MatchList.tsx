@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import MatchCard from './MatchCard'
 import type { Match, Prediction, Team } from '@/types'
+import type { Standing } from '@/lib/utils/simulate'
 import { PHASE_LABELS } from '@/lib/utils/points'
+import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
 
 type Props = {
   matches: Match[]
@@ -16,8 +18,7 @@ type Props = {
     awayGoals: number | null,
     penaltyWinner: 'home' | 'away' | null
   ) => void
-  selectedGroup?: string
-  onSelectedGroupChange?: (group: string) => void
+  groupStandings?: Map<string, Standing[]>
 }
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
@@ -29,16 +30,10 @@ export default function MatchList({
   groupId,
   bracketProjection,
   onPredictionChange,
-  selectedGroup: controlledSelectedGroup,
-  onSelectedGroupChange,
+  groupStandings,
 }: Props) {
   const [selectedPhase, setSelectedPhase] = useState<string>('group')
-  const [internalSelectedGroup, setInternalSelectedGroup] = useState<string>('all')
-  const selectedGroup = controlledSelectedGroup ?? internalSelectedGroup
-  const setSelectedGroup = (group: string) => {
-    setInternalSelectedGroup(group)
-    onSelectedGroupChange?.(group)
-  }
+  const [selectedGroup, setSelectedGroup] = useState<string>('all')
 
   const phases = PHASE_ORDER.filter(p => matches.some(m => m.phase === p))
   const isGroupPhase = selectedPhase === 'group'
@@ -114,6 +109,15 @@ export default function MatchList({
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-xs font-black text-[#FFB81C] tracking-widest uppercase">{label}</span>
                   <div className="flex-1 h-px bg-[#2A2D4A]" />
+                </div>
+              )}
+              {isGroupPhase && groupStandings && (selectedGroup !== 'all' || items[0]?.group_code) && (
+                <div className="mb-3">
+                  <GroupStandingsTables
+                    standings={groupStandings}
+                    groupFilter={selectedGroup === 'all' ? items[0]?.group_code : selectedGroup}
+                    compact
+                  />
                 </div>
               )}
               <div className="space-y-3">
