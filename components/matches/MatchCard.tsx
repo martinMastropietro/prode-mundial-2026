@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { isMatchClosed, formatMatchDate } from '@/lib/utils/dates'
 import { savePrediction } from '@/app/(app)/groups/[id]/matches/actions'
 import type { Match, Prediction } from '@/types'
@@ -11,29 +11,40 @@ type Props = {
   groupId: string
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
 export default function MatchCard({ match, prediction, groupId }: Props) {
   const closed = isMatchClosed(match.match_date, match.status)
   const [homeGoals, setHomeGoals] = useState(prediction?.predicted_home_score?.toString() ?? '')
   const [awayGoals, setAwayGoals] = useState(prediction?.predicted_away_score?.toString() ?? '')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [status, setStatus] = useState<SaveStatus>('idle')
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const homeTeam = match.home_team
   const awayTeam = match.away_team
 
-  async function handleSave() {
-    if (!homeGoals || !awayGoals) return
-    setSaving(true)
+  const doSave = useCallback(async (h: string, a: string) => {
+    if (h === '' || a === '') return
+    setStatus('saving')
     const fd = new FormData()
     fd.append('match_id', match.id)
     fd.append('group_id', groupId)
-    fd.append('home_goals', homeGoals)
-    fd.append('away_goals', awayGoals)
+    fd.append('home_goals', h)
+    fd.append('away_goals', a)
     await savePrediction(fd)
-    setSaved(true)
-    setSaving(false)
-    setTimeout(() => setSaved(false), 2000)
-  }
+    setStatus('saved')
+    setTimeout(() => setStatus('idle'), 1500)
+  }, [match.id, groupId])
+
+  // Auto-save con debounce 800ms
+  useEffect(() => {
+    if (closed || homeGoals === '' || awayGoals === '') return
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => doSave(homeGoals, awayGoals), 800)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [homeGoals, awayGoals, closed, doSave])
+
+  const inputClass = "w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
 
   return (
     <div className={`bg-[#1A1A2E] rounded-xl border transition-colors ${
@@ -43,28 +54,38 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
         {/* Date / Status */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-[#8B8FA8] text-xs">{formatMatchDate(match.match_date)}</span>
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            match.status === 'finished'
-              ? 'bg-[#8B8FA8]/20 text-[#8B8FA8]'
-              : match.status === 'live'
-              ? 'bg-[#00A651]/20 text-[#00A651]'
-              : closed
-              ? 'bg-[#C8102E]/20 text-[#C8102E]'
-              : 'bg-[#003087]/20 text-[#003087]'
-          }`}>
-            {match.status === 'finished' ? 'Finalizado' : match.status === 'live' ? 'En juego' : closed ? 'Cerrado' : 'Abierto'}
-          </span>
+          <div className="flex items-center gap-2">
+            {/* Auto-save indicator */}
+            {!closed && status !== 'idle' && (
+              <span className={`text-xs ${
+                status === 'saving' ? 'text-[#8B8FA8]' :
+                status === 'saved'  ? 'text-[#00A651]' : 'text-[#C8102E]'
+              }`}>
+                {status === 'saving' ? '⏳' : status === 'saved' ? '✓ guardado' : '✗ error'}
+              </span>
+            )}
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              match.status === 'finished' ? 'bg-[#8B8FA8]/20 text-[#8B8FA8]' :
+              match.status === 'live'     ? 'bg-[#00A651]/20 text-[#00A651]' :
+              closed                      ? 'bg-[#C8102E]/20 text-[#C8102E]' :
+                                            'bg-[#003087]/20 text-[#6699ff]'
+            }`}>
+              {match.status === 'finished' ? 'Finalizado' :
+               match.status === 'live'     ? 'En juego' :
+               closed                      ? 'Cerrado'   : 'Abierto'}
+            </span>
+          </div>
         </div>
 
         {/* Teams */}
         <div className="flex items-center gap-4">
           {/* Home */}
           <div className="flex-1 flex items-center gap-2 justify-end">
-            <span className="font-medium text-sm text-right">{homeTeam?.name ?? 'Por definir'}</span>
-            <span className="text-2xl">{homeTeam?.flag_emoji ?? '🏳️'}</span>
+            <span className="font-medium text-sm text-right leading-tight">{homeTeam?.name ?? 'Por definir'}</span>
+            <span className="text-2xl flex-shrink-0">{homeTeam?.flag_emoji ?? '🏳️'}</span>
           </div>
 
-          {/* Score / Input */}
+          {/* Score */}
           <div className="flex items-center gap-2">
             {match.status === 'finished' ? (
               <div className="flex items-center gap-1 text-xl font-black">
@@ -81,24 +102,18 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
             ) : (
               <div className="flex items-center gap-1">
                 <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={2}
+                  type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
                   value={homeGoals}
-                  onChange={(e) => setHomeGoals(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
+                  onChange={e => setHomeGoals(e.target.value.replace(/[^0-9]/g, ''))}
+                  className={inputClass}
                   placeholder="0"
                 />
                 <span className="text-[#8B8FA8]">-</span>
                 <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={2}
+                  type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
                   value={awayGoals}
-                  onChange={(e) => setAwayGoals(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-10 h-10 text-center bg-[#0D0D1A] border border-[#2A2D4A] rounded-lg text-white font-bold focus:outline-none focus:border-[#C8102E] text-sm"
+                  onChange={e => setAwayGoals(e.target.value.replace(/[^0-9]/g, ''))}
+                  className={inputClass}
                   placeholder="0"
                 />
               </div>
@@ -107,8 +122,8 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
 
           {/* Away */}
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-2xl">{awayTeam?.flag_emoji ?? '🏳️'}</span>
-            <span className="font-medium text-sm">{awayTeam?.name ?? 'Por definir'}</span>
+            <span className="text-2xl flex-shrink-0">{awayTeam?.flag_emoji ?? '🏳️'}</span>
+            <span className="font-medium text-sm leading-tight">{awayTeam?.name ?? 'Por definir'}</span>
           </div>
         </div>
 
@@ -117,21 +132,6 @@ export default function MatchCard({ match, prediction, groupId }: Props) {
           <div className="mt-2 text-center">
             <span className="text-[#FFB81C] text-sm font-bold">+{prediction.points_earned} pts</span>
           </div>
-        )}
-
-        {/* Save button */}
-        {!closed && (
-          <button
-            onClick={handleSave}
-            disabled={saving || homeGoals === '' || awayGoals === ''}
-            className={`mt-4 w-full py-2 text-sm font-bold rounded-xl transition-colors ${
-              saved
-                ? 'bg-[#00A651]/20 text-[#00A651]'
-                : 'bg-[#C8102E] hover:bg-[#a50d26] text-white disabled:opacity-40 disabled:cursor-not-allowed'
-            }`}
-          >
-            {saved ? '✓ Guardado' : saving ? 'Guardando...' : prediction ? 'Actualizar' : 'Guardar'}
-          </button>
         )}
       </div>
     </div>

@@ -37,4 +37,5 @@ export async function savePrediction(formData: FormData) {
   )
 
   revalidatePath(`/groups/${groupId}/matches`)
+  revalidatePath('/calendario')
 }
