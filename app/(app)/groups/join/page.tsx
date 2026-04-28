@@ -15,7 +15,7 @@ export default function JoinGroupPage() {
       {/* Step 1: Search */}
       <div className="bg-[#1A1A2E] rounded-2xl p-6 border border-[#2A2D4A] mb-4">
         <h2 className="font-bold mb-4 text-sm text-[#8B8FA8] uppercase tracking-wide">
-          Paso 1 · Buscar por ID
+          Paso 1 · Buscar por ID o nombre
         </h2>
         <form action={searchAction} className="flex gap-3">
           <input
@@ -23,10 +23,10 @@ export default function JoinGroupPage() {
             type="text"
             required
             value={groupId}
-            onChange={(e) => setGroupId(e.target.value.toUpperCase())}
-            className="flex-1 px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors uppercase"
-            placeholder="WC26-XXXXXX"
-            maxLength={11}
+            onChange={(e) => setGroupId(e.target.value)}
+            className="flex-1 px-4 py-3 bg-[#0D0D1A] border border-[#2A2D4A] rounded-xl text-white placeholder-[#8B8FA8] focus:outline-none focus:border-[#C8102E] transition-colors"
+            placeholder="WC26-XXXXXX o nombre del grupo"
+            maxLength={50}
           />
           <button
             type="submit"

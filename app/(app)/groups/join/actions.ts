@@ -13,18 +13,31 @@ export async function searchGroup(
   _state: SearchState,
   formData: FormData
 ): Promise<SearchState> {
-  const publicId = (formData.get('public_id') as string)?.trim().toUpperCase()
-  if (!publicId) return { error: 'Ingresá un ID de grupo' }
+  const query = (formData.get('public_id') as string)?.trim()
+  if (!query) return { error: 'Ingresá el ID o nombre del grupo' }
 
   const supabase = await createClient()
-  const { data: group } = await supabase
+
+  // Primero buscar por public_id exacto
+  const { data: byId } = await supabase
     .from('groups')
     .select('id, name, public_id')
-    .eq('public_id', publicId)
+    .eq('public_id', query.toUpperCase())
     .maybeSingle()
 
-  if (!group) return { error: 'Grupo no encontrado. Verificá el ID.' }
-  return { group }
+  if (byId) return { group: byId }
+
+  // Si no encontró, buscar por nombre (case-insensitive)
+  const { data: byName } = await supabase
+    .from('groups')
+    .select('id, name, public_id')
+    .ilike('name', `%${query}%`)
+    .limit(1)
+    .maybeSingle()
+
+  if (byName) return { group: byName }
+
+  return { error: 'Grupo no encontrado. Buscá por ID (WC26-XXXXXX) o nombre.' }
 }
 
 export async function joinGroup(
@@ -39,7 +52,6 @@ export async function joinGroup(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'No autenticado' }
 
-  // Verify credentials
   const { data: group } = await supabase
     .from('groups')
     .select('id, access_code, access_password')
@@ -50,7 +62,7 @@ export async function joinGroup(
   if (group.access_code !== accessCode) return { error: 'Código incorrecto' }
   if (group.access_password !== accessPassword) return { error: 'Contraseña incorrecta' }
 
-  // Check already a member
+  // Si ya es miembro, redirigir directo
   const { data: existing } = await supabase
     .from('group_members')
     .select('id')
@@ -58,9 +70,7 @@ export async function joinGroup(
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (existing) {
-    redirect(`/groups/${groupId}`)
-  }
+  if (existing) redirect(`/groups/${groupId}`)
 
   const { error } = await supabase.from('group_members').insert({
     group_id: groupId,
