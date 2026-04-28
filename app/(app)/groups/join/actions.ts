@@ -62,7 +62,11 @@ export async function joinGroup(
     role: 'member',
   })
 
-  if (error) return { error: `Error: ${error.message}` }
+  if (error) {
+    // duplicate key = ya sos miembro, redirigir igual
+    if (error.code === '23505') redirect(`/groups/${groupId}`)
+    return { error: `Error: ${error.message}` }
+  }
 
   redirect(`/groups/${groupId}`)
 }
