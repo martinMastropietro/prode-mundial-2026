@@ -1,32 +1,46 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import GroupStageView from '@/components/calendario/GroupStageView'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
 import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
-import type { Match, Prediction, Team } from '@/types'
-import { simulateGroupStandings } from '@/lib/utils/simulate'
+import type { Match, Team } from '@/types'
+import type { Standing, MatchProjection } from '@/lib/utils/simulate'
 
 const TABS = [
-  { id: 'partidos', label: 'Partidos' },
-  { id: 'grupos', label: 'Fase de grupos' },
+  { id: 'partidos',      label: 'Partidos' },
+  { id: 'grupos',        label: 'Fase de grupos' },
   { id: 'eliminatorias', label: 'Cuadro' },
 ]
 
 type Props = {
   matches: Match[]
-  teams: Team[]
+  teams?: Team[]
+  realQualifiers?: Record<string, Team>
+  realBracket?: Record<number, MatchProjection>
+  realStandings?: Record<string, Standing[] | undefined>
 }
 
-export default function CalendarioClient({ matches, teams }: Props) {
+export default function CalendarioClient({ matches, realQualifiers, realBracket, realStandings }: Props) {
   const [tab, setTab] = useState('partidos')
 
-  const groupMatches    = useMemo(() => matches.filter(m => m.phase === 'group'), [matches])
-  const knockoutMatches = useMemo(() => matches.filter(m => m.phase !== 'group'), [matches])
-  const officialStandings = useMemo(
-    () => simulateGroupStandings(matches, new Map<string, Prediction>(), teams),
-    [matches, teams]
+  const groupMatches    = matches.filter(m => m.phase === 'group')
+  const knockoutMatches = matches.filter(m => m.phase !== 'group')
+
+  // Convertir standings serializado de vuelta a Map
+  const standingsMap = new Map<string, Standing[]>()
+  if (realStandings) {
+    for (const [g, rows] of Object.entries(realStandings)) {
+      if (rows) standingsMap.set(g, rows)
+    }
+  }
+
+  // Convertir qualifiers serializado a Map
+  const qualifiersMap = new Map<string, Team>(
+    Object.entries(realQualifiers ?? {})
   )
+
+  const anyResultsLoaded = matches.some(m => m.status === 'finished')
 
   return (
     <div>
@@ -48,14 +62,27 @@ export default function CalendarioClient({ matches, teams }: Props) {
       </div>
 
       {tab === 'partidos' && <GroupStageView matches={groupMatches} />}
+
       {tab === 'grupos' && (
         <GroupStandingsTables
           title="Posiciones por grupo"
-          standings={officialStandings}
+          standings={standingsMap}
         />
       )}
+
       {tab === 'eliminatorias' && (
-        <KnockoutBracket matches={knockoutMatches} />
+        <div>
+          {anyResultsLoaded && (
+            <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
+              ⚡ Proyección basada en resultados reales — se actualiza con cada partido
+            </div>
+          )}
+          <KnockoutBracket
+            matches={knockoutMatches}
+            projectedQualifiers={qualifiersMap}
+            projectedMatches={realBracket}
+          />
+        </div>
       )}
     </div>
   )
