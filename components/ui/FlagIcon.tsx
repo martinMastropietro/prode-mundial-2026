@@ -61,13 +61,7 @@ export default function FlagIcon({ team, className = '' }: Props) {
   const flagCode = team?.code ? FLAG_CODES[team.code] : undefined
   const src = flagCode ? `https://flagcdn.com/w40/${flagCode}.png` : undefined
 
-  if (!src) {
-    return (
-      <span className={`inline-flex leading-none ${className}`}>
-        {team?.flag_emoji ?? '🏳️'}
-      </span>
-    )
-  }
+  if (!src) return <span className={`inline-flex h-4 w-6 rounded-[2px] border border-white/20 bg-white/80 shadow-sm ${className}`} />
 
   return (
     <span className={`relative inline-flex h-4 w-6 overflow-hidden rounded-[2px] border border-white/20 shadow-sm ${className}`}>

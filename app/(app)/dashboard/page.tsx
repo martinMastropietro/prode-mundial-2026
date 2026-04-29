@@ -1,5 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
+import FlagIcon from '@/components/ui/FlagIcon'
 import Link from 'next/link'
+import type { Team } from '@/types'
+
+type UpcomingMatch = {
+  id: string
+  match_date: string | null
+  home_team: Pick<Team, 'name' | 'code' | 'flag_emoji'> | null
+  away_team: Pick<Team, 'name' | 'code' | 'flag_emoji'> | null
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -29,6 +38,7 @@ export default async function DashboardPage() {
     .gte('match_date', new Date().toISOString())
     .order('match_date', { ascending: true })
     .limit(5)
+  const matches = (upcomingMatches ?? []) as unknown as UpcomingMatch[]
 
   return (
     <div className="space-y-8">
@@ -96,19 +106,19 @@ export default async function DashboardPage() {
       {/* Upcoming matches */}
       <section>
         <h2 className="font-bold text-lg mb-4">Próximos partidos</h2>
-        {!upcomingMatches || upcomingMatches.length === 0 ? (
+        {matches.length === 0 ? (
           <p className="text-[#8B8FA8] text-sm">No hay partidos programados próximamente.</p>
         ) : (
           <div className="space-y-3">
-            {upcomingMatches.map((match: any) => (
+            {matches.map((match) => (
               <div key={match.id} className="bg-[#1A1A2E] rounded-xl p-4 border border-[#2A2D4A]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{match.home_team?.flag_emoji ?? '🏳️'}</span>
+                    <FlagIcon team={match.home_team} />
                     <span className="font-medium text-sm">{match.home_team?.name ?? 'Por definir'}</span>
                     <span className="text-[#8B8FA8] text-xs">vs</span>
                     <span className="font-medium text-sm">{match.away_team?.name ?? 'Por definir'}</span>
-                    <span className="text-xl">{match.away_team?.flag_emoji ?? '🏳️'}</span>
+                    <FlagIcon team={match.away_team} />
                   </div>
                   <div className="text-[#8B8FA8] text-xs">
                     {match.match_date

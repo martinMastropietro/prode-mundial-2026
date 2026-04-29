@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 export default function LandingPage() {
   return (
@@ -117,12 +118,12 @@ export default function LandingPage() {
       <section className="px-4 pb-10 max-w-4xl mx-auto w-full">
         <div className="bg-gradient-to-r from-[#C8102E]/10 via-[#1A1A2E] to-[#003087]/10 rounded-2xl p-5 border border-[#2A2D4A] flex flex-wrap justify-center gap-6 text-center">
           {[
-            { flag: '🇺🇸', country: 'Estados Unidos' },
-            { flag: '🇲🇽', country: 'México' },
-            { flag: '🇨🇦', country: 'Canadá' },
+            { code: 'USA', country: 'Estados Unidos' },
+            { code: 'MEX', country: 'México' },
+            { code: 'CAN', country: 'Canadá' },
           ].map(h => (
-            <div key={h.country}>
-              <div className="text-3xl mb-1">{h.flag}</div>
+            <div key={h.country} className="flex flex-col items-center">
+              <FlagIcon team={{ code: h.code, flag_emoji: null }} className="mb-2 h-5 w-8" />
               <div className="text-[#8B8FA8] text-xs">{h.country}</div>
             </div>
           ))}

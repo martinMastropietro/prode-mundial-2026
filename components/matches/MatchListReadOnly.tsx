@@ -5,6 +5,7 @@ import type { Match, Prediction, Team } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
 import { formatMatchDate } from '@/lib/utils/dates'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
+import FlagIcon from '@/components/ui/FlagIcon'
 import type { MatchProjection } from '@/lib/utils/simulate'
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
@@ -46,7 +47,7 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
           <span className={`font-medium text-sm text-right ${isProjected ? 'text-[#6699ff]' : ''}`}>
             {homeTeam?.name ?? 'Por definir'}
           </span>
-          <span className="text-2xl">{homeTeam?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={homeTeam} />
         </div>
 
         {/* Scores */}
@@ -84,7 +85,7 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
 
         {/* Visitante */}
         <div className="flex-1 flex items-center gap-2">
-          <span className="text-2xl">{awayTeam?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={awayTeam} />
           <span className={`font-medium text-sm ${isProjected ? 'text-[#6699ff]' : ''}`}>
             {awayTeam?.name ?? 'Por definir'}
           </span>

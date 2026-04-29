@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { clearMatchResult, saveMatchResult } from './actions'
 import type { Match } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
 
@@ -60,11 +61,11 @@ function MatchResultRow({ match }: { match: Match }) {
       <div className="flex items-center gap-3 flex-wrap">
         {/* Partido */}
         <div className="flex items-center gap-2 flex-1 min-w-48">
-          <span className="text-lg">{match.home_team?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={match.home_team} />
           <span className="text-sm font-medium">{match.home_team?.name ?? 'TBD'}</span>
           <span className="text-[#8B8FA8] text-xs">vs</span>
           <span className="text-sm font-medium">{match.away_team?.name ?? 'TBD'}</span>
-          <span className="text-lg">{match.away_team?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={match.away_team} />
         </div>
 
         {/* Score inputs */}

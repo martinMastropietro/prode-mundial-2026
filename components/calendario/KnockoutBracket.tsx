@@ -1,6 +1,7 @@
 import type { Match, MatchPhase, Team } from '@/types'
 import { R32_BRACKET } from '@/lib/utils/simulate'
 import type { MatchProjection, ProjectedQualifiers } from '@/lib/utils/simulate'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 type BracketMatch = Match & { slotLabel: string }
 
@@ -46,9 +47,15 @@ function MatchBox({
   if (!match) {
     return (
       <div className="w-44 bg-[#16213E] border border-[#2A2D4A] rounded-lg overflow-hidden opacity-40">
-        <div className="px-2 py-1.5 text-xs text-[#8B8FA8]">🏳️ Por definir</div>
+        <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-[#8B8FA8]">
+          <FlagIcon team={null} />
+          <span>Por definir</span>
+        </div>
         <div className="border-t border-[#2A2D4A]" />
-        <div className="px-2 py-1.5 text-xs text-[#8B8FA8]">🏳️ Por definir</div>
+        <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-[#8B8FA8]">
+          <FlagIcon team={null} />
+          <span>Por definir</span>
+        </div>
       </div>
     )
   }
@@ -68,7 +75,7 @@ function MatchBox({
       {/* Home row */}
       <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${homeWon ? 'bg-[#C8102E]/20' : ''}`}>
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-base leading-none">{homeTeam?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={homeTeam} />
           <span className={`truncate leading-tight text-xs ${
             homeWon ? 'font-bold text-white' :
             homeProj ? 'text-[#6699ff] italic' :
@@ -88,7 +95,7 @@ function MatchBox({
       {/* Away row */}
       <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${awayWon ? 'bg-[#C8102E]/20' : ''}`}>
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-base leading-none">{awayTeam?.flag_emoji ?? '🏳️'}</span>
+          <FlagIcon team={awayTeam} />
           <span className={`truncate leading-tight text-xs ${
             awayWon ? 'font-bold text-white' :
             awayProj ? 'text-[#6699ff] italic' :
