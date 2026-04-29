@@ -164,19 +164,19 @@ export default function MatchCard({ match, prediction, groupId, predictionMode, 
               return (
                 <div className="flex items-center gap-4 mb-2">
                   <div className="flex-1 flex items-center gap-2 justify-end">
-                    <span className={`font-medium text-sm ${realHomeWon ? 'font-bold text-white' : 'text-[#8B8FA8]'}`}>
+                    <span className={`font-medium text-sm text-white ${realHomeWon ? 'font-bold' : ''}`}>
                       {homeTeam?.name ?? '?'}
                     </span>
                     <FlagIcon team={homeTeam} className="flex-shrink-0" />
                   </div>
-                  <div className="flex items-center gap-1 text-xl font-black flex-shrink-0">
-                    <span className={realHomeWon ? 'text-white' : 'text-[#8B8FA8]'}>{rh ?? '-'}</span>
+                  <div className="flex items-center gap-1 text-xl font-black flex-shrink-0 text-white">
+                    <span>{rh ?? '-'}</span>
                     <span className="text-[#8B8FA8] text-sm">-</span>
-                    <span className={realAwayWon ? 'text-white' : 'text-[#8B8FA8]'}>{ra ?? '-'}</span>
+                    <span>{ra ?? '-'}</span>
                   </div>
                   <div className="flex-1 flex items-center gap-2">
                     <FlagIcon team={awayTeam} className="flex-shrink-0" />
-                    <span className={`font-medium text-sm ${realAwayWon ? 'font-bold text-white' : 'text-[#8B8FA8]'}`}>
+                    <span className={`font-medium text-sm text-white ${realAwayWon ? 'font-bold' : ''}`}>
                       {awayTeam?.name ?? '?'}
                     </span>
                   </div>
