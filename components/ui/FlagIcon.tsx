@@ -1,9 +1,55 @@
 import Image from 'next/image'
 import type { Team } from '@/types'
 
-const FLAG_IMAGES: Record<string, string> = {
-  MEX: 'https://flagcdn.com/w40/mx.png',
-  RSA: 'https://flagcdn.com/w40/za.png',
+const FLAG_CODES: Record<string, string> = {
+  ALG: 'dz',
+  ARG: 'ar',
+  AUS: 'au',
+  AUT: 'at',
+  BEL: 'be',
+  BIH: 'ba',
+  BRA: 'br',
+  CAN: 'ca',
+  CIV: 'ci',
+  COD: 'cd',
+  COL: 'co',
+  CPV: 'cv',
+  CRO: 'hr',
+  CUW: 'cw',
+  CZE: 'cz',
+  ECU: 'ec',
+  EGY: 'eg',
+  ENG: 'gb-eng',
+  ESP: 'es',
+  FRA: 'fr',
+  GER: 'de',
+  GHA: 'gh',
+  HAI: 'ht',
+  IRN: 'ir',
+  IRQ: 'iq',
+  JOR: 'jo',
+  JPN: 'jp',
+  KOR: 'kr',
+  KSA: 'sa',
+  MAR: 'ma',
+  MEX: 'mx',
+  NED: 'nl',
+  NOR: 'no',
+  NZL: 'nz',
+  PAN: 'pa',
+  PAR: 'py',
+  POR: 'pt',
+  QAT: 'qa',
+  RSA: 'za',
+  SCO: 'gb-sct',
+  SEN: 'sn',
+  SUI: 'ch',
+  SWE: 'se',
+  TUN: 'tn',
+  TUR: 'tr',
+  URU: 'uy',
+  USA: 'us',
+  UZB: 'uz',
 }
 
 type Props = {
@@ -12,7 +58,8 @@ type Props = {
 }
 
 export default function FlagIcon({ team, className = '' }: Props) {
-  const src = team?.code ? FLAG_IMAGES[team.code] : undefined
+  const flagCode = team?.code ? FLAG_CODES[team.code] : undefined
+  const src = flagCode ? `https://flagcdn.com/w40/${flagCode}.png` : undefined
 
   if (!src) {
     return (
