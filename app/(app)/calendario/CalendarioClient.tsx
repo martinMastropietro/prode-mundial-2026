@@ -8,9 +8,9 @@ import type { Match, Prediction, Team } from '@/types'
 import { simulateGroupStandings } from '@/lib/utils/simulate'
 
 const TABS = [
-  { id: 'partidos', label: 'Fase de grupos' },
-  { id: 'grupos', label: 'Grupos' },
-  { id: 'eliminatorias', label: 'Cuadro eliminatorio' },
+  { id: 'partidos', label: 'Partidos' },
+  { id: 'grupos', label: 'Fase de grupos' },
+  { id: 'eliminatorias', label: 'Cuadro' },
 ]
 
 type Props = {

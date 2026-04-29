@@ -21,7 +21,7 @@ export default async function CalendarioPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black mb-1">Calendario</h1>
+      <h1 className="text-2xl font-black mb-1">Fixture y tablas</h1>
       <p className="text-[#8B8FA8] text-sm mb-6">FIFA World Cup 2026 · 11 Jun – 19 Jul</p>
       <CalendarioClient
         matches={(matchesRes.data ?? []) as unknown as Match[]}

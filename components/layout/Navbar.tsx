@@ -37,13 +37,13 @@ export default function Navbar({ profile, isAdmin }: Props) {
             Inicio
           </Link>
           <Link href="/calendario" className="text-[#8B8FA8] hover:text-white transition-colors">
-            Calendario
+            Fixture y tablas
           </Link>
           <Link href="/groups/join" className="text-[#8B8FA8] hover:text-white transition-colors">
-            Unirse
+            Unirse a un grupo
           </Link>
           <Link href="/groups/create" className="text-[#8B8FA8] hover:text-white transition-colors">
-            Crear grupo
+            Crear un grupo
           </Link>
           {isAdmin && (
             <Link href="/admin" className="text-[#FFB81C] hover:text-[#FFD700] transition-colors font-bold">
