@@ -246,23 +246,29 @@ export default function KnockoutBracket({
             return (
               <div className="flex flex-col items-center justify-center gap-3 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
 
-                {/* Campeón sobre la copa */}
+                {/* Campeón + copa */}
                 <div className="text-center">
                   {champion ? (
-                    <div className="flex flex-col items-center gap-1 mb-3">
-                      <span className="text-4xl drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">{champion.flag_emoji ?? '🏆'}</span>
-                      <span className="text-[#FFD700] font-black text-sm tracking-wide">{champion.name}</span>
+                    // Con campeón: bandera izquierda + nombre + copa pequeña derecha
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-2">
+                        <FlagIcon team={champion} />
+                        <div className="text-left">
+                          <div className="text-[#8B8FA8] text-[10px] uppercase tracking-wider">Campeón</div>
+                          <div className="text-[#FFD700] font-black text-base leading-tight">{champion.name}</div>
+                        </div>
+                      </div>
+                      <div className="relative w-8 h-12 flex-shrink-0 drop-shadow-[0_0_10px_rgba(255,184,28,0.5)]">
+                        <Image src="/trophy.png" alt="Copa" fill className="object-contain" />
+                      </div>
                     </div>
                   ) : (
-                    <div className="h-14 flex items-end justify-center mb-3">
-                      <span className="text-[#8B8FA8] text-xs">Predecí la final →</span>
+                    // Sin campeón: solo la copa grande, sin texto
+                    <div className="relative w-16 h-20 mx-auto mb-1 drop-shadow-[0_0_16px_rgba(255,184,28,0.5)]">
+                      <Image src="/trophy.png" alt="FIFA World Cup" fill className="object-contain" />
                     </div>
                   )}
-                  {/* Copa real */}
-                  <div className="relative w-16 h-20 mx-auto drop-shadow-[0_0_16px_rgba(255,184,28,0.5)]">
-                    <Image src="/trophy.png" alt="FIFA World Cup" fill className="object-contain" />
-                  </div>
-                  <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider mt-3">Final</div>
+                  <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider mt-2">Final</div>
                 </div>
 
                 <MatchBox
