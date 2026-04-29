@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { isMatchClosed, formatMatchDate } from '@/lib/utils/dates'
 import { savePrediction } from '@/app/(app)/groups/[id]/matches/actions'
 import type { Match, Prediction, Team } from '@/types'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 type Props = {
   match: Match
@@ -129,7 +130,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
                 <div className="text-[10px] text-[#6699ff]/70">proyectado</div>
               )}
             </div>
-            <span className="text-2xl flex-shrink-0">{homeTeam?.flag_emoji ?? '🏳️'}</span>
+            <FlagIcon team={homeTeam} className="flex-shrink-0" />
           </div>
 
           {/* Score */}
@@ -169,7 +170,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
 
           {/* Away */}
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-2xl flex-shrink-0">{awayTeam?.flag_emoji ?? '🏳️'}</span>
+            <FlagIcon team={awayTeam} className="flex-shrink-0" />
             <div className="min-w-0">
               <div className={`font-medium text-sm leading-tight ${isProjected ? 'text-[#6699ff]' : ''}`}>
                 {awayTeam?.name ?? 'Por definir'}
@@ -196,7 +197,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
                     : 'bg-[#0D0D1A] border border-[#2A2D4A] text-[#8B8FA8] hover:text-white'
                 }`}
               >
-                <span>{homeTeam?.flag_emoji}</span>
+                <FlagIcon team={homeTeam} />
                 <span>{homeTeam?.name}</span>
               </button>
               <button
@@ -207,7 +208,7 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
                     : 'bg-[#0D0D1A] border border-[#2A2D4A] text-[#8B8FA8] hover:text-white'
                 }`}
               >
-                <span>{awayTeam?.flag_emoji}</span>
+                <FlagIcon team={awayTeam} />
                 <span>{awayTeam?.name}</span>
               </button>
             </div>

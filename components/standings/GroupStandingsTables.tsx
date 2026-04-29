@@ -1,4 +1,5 @@
 import type { Standing } from '@/lib/utils/simulate'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 type Props = {
   standings: Map<string, Standing[]>
@@ -69,7 +70,7 @@ export default function GroupStandingsTables({ standings, title, compact = false
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-lg leading-none">{row.team.flag_emoji ?? '🏳️'}</span>
+                          <FlagIcon team={row.team} />
                           <span className="font-bold truncate">{row.team.name}</span>
                         </div>
                       </td>

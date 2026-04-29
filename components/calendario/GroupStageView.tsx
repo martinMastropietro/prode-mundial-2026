@@ -1,4 +1,5 @@
 import type { Match } from '@/types'
+import FlagIcon from '@/components/ui/FlagIcon'
 
 const TZ = 'America/Buenos_Aires'
 
@@ -86,7 +87,7 @@ export default function GroupStageView({ matches }: { matches: Match[] }) {
                     <span className="font-medium text-sm text-right leading-tight">
                       {match.home_team?.name ?? 'Por definir'}
                     </span>
-                    <span className="text-xl flex-shrink-0">{match.home_team?.flag_emoji ?? '🏳️'}</span>
+                    <FlagIcon team={match.home_team} className="flex-shrink-0" />
                   </div>
 
                   {/* Score */}
@@ -96,7 +97,7 @@ export default function GroupStageView({ matches }: { matches: Match[] }) {
 
                   {/* Visitante */}
                   <div className="flex items-center gap-2 flex-1">
-                    <span className="text-xl flex-shrink-0">{match.away_team?.flag_emoji ?? '🏳️'}</span>
+                    <FlagIcon team={match.away_team} className="flex-shrink-0" />
                     <span className="font-medium text-sm leading-tight">
                       {match.away_team?.name ?? 'Por definir'}
                     </span>
