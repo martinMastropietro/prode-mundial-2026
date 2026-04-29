@@ -15,12 +15,6 @@ function qualificationClass(index: number) {
   return ''
 }
 
-function positionClass(index: number) {
-  if (index < 2) return 'bg-[#00E83A] text-white'
-  if (index === 2) return 'bg-[#16A9E8] text-white'
-  return 'text-[#8B8FA8]'
-}
-
 export default function GroupStandingsTables({ standings, title, compact = false, groupFilter }: Props) {
   const groups = GROUPS
     .filter(group => !groupFilter || group === groupFilter)
@@ -70,10 +64,8 @@ export default function GroupStandingsTables({ standings, title, compact = false
                       key={row.team.id}
                       className={`border-b border-[#2A2D4A]/40 last:border-0 ${qualificationClass(index)}`}
                     >
-                      <td className="px-3 py-2">
-                        <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full font-black ${positionClass(index)}`}>
-                          {index + 1}
-                        </span>
+                      <td className="px-3 py-2 font-black text-[#8B8FA8]">
+                        {index + 1}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2 min-w-0">
@@ -94,7 +86,7 @@ export default function GroupStandingsTables({ standings, title, compact = false
                 </tbody>
               </table>
             </div>
-            <div className="grid gap-2 border-t border-[#2A2D4A] px-4 py-3 text-xs font-bold text-white sm:grid-cols-2">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#2A2D4A] px-4 py-3 text-xs font-bold text-white">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-[#00E83A]" />
                 <span>Clasificado a 16avos</span>
