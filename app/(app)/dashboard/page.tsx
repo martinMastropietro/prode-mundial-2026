@@ -1,13 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
 import FlagIcon from '@/components/ui/FlagIcon'
 import Link from 'next/link'
-import type { Team } from '@/types'
+import { PHASE_LABELS } from '@/lib/utils/points'
+import type { MatchPhase, Team } from '@/types'
 
 type UpcomingMatch = {
   id: string
+  phase: MatchPhase
+  group_code: string | null
   match_date: string | null
+  city: string | null
+  stadium: string | null
   home_team: Pick<Team, 'name' | 'code' | 'flag_emoji'> | null
   away_team: Pick<Team, 'name' | 'code' | 'flag_emoji'> | null
+}
+
+function matchMeta(match: UpcomingMatch) {
+  return [
+    PHASE_LABELS[match.phase] ?? match.phase,
+    match.phase === 'group' && match.group_code ? `Grupo ${match.group_code}` : null,
+    match.city,
+    match.stadium,
+  ].filter(Boolean).join(' · ')
 }
 
 export default async function DashboardPage() {
@@ -33,7 +47,7 @@ export default async function DashboardPage() {
 
   const { data: upcomingMatches } = await supabase
     .from('matches')
-    .select('id, match_number, phase, match_date, status, home_team:home_team_id(name, flag_emoji, code), away_team:away_team_id(name, flag_emoji, code)')
+    .select('id, match_number, phase, group_code, match_date, city, stadium, status, home_team:home_team_id(name, flag_emoji, code), away_team:away_team_id(name, flag_emoji, code)')
     .eq('status', 'scheduled')
     .gte('match_date', new Date().toISOString())
     .order('match_date', { ascending: true })
@@ -112,15 +126,20 @@ export default async function DashboardPage() {
           <div className="space-y-3">
             {matches.map((match) => (
               <div key={match.id} className="bg-[#1A1A2E] rounded-xl p-4 border border-[#2A2D4A]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FlagIcon team={match.home_team} />
-                    <span className="font-medium text-sm">{match.home_team?.name ?? 'Por definir'}</span>
-                    <span className="text-[#8B8FA8] text-xs">vs</span>
-                    <span className="font-medium text-sm">{match.away_team?.name ?? 'Por definir'}</span>
-                    <FlagIcon team={match.away_team} />
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3">
+                      <FlagIcon team={match.home_team} className="flex-shrink-0" />
+                      <span className="font-medium text-sm">{match.home_team?.name ?? 'Por definir'}</span>
+                      <span className="text-[#8B8FA8] text-xs">vs</span>
+                      <span className="font-medium text-sm">{match.away_team?.name ?? 'Por definir'}</span>
+                      <FlagIcon team={match.away_team} className="flex-shrink-0" />
+                    </div>
+                    <div className="mt-2 text-xs text-[#8B8FA8] leading-snug">
+                      {matchMeta(match)}
+                    </div>
                   </div>
-                  <div className="text-[#8B8FA8] text-xs">
+                  <div className="text-[#8B8FA8] text-xs flex-shrink-0 pt-0.5">
                     {match.match_date
                       ? new Date(match.match_date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
                       : 'TBD'}
