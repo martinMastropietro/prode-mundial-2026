@@ -148,121 +148,151 @@ export default function MatchCard({ match, prediction, groupId, predictionMode, 
           </div>
         </div>
 
-        {/* Teams row */}
-        <div className="flex items-center gap-4">
-          {/* Home */}
-          <div className="flex-1 flex items-center gap-2 justify-end">
-            <div className="text-right min-w-0">
-              <div className={`font-medium text-sm leading-tight ${
-                homePredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
-              }`}>
-                {homeTeam?.name ?? 'Por definir'}
-              </div>
-              {isProjected && homeTeam && (
-                <div className="text-[10px] text-[#6699ff]/70">proyectado</div>
-              )}
-            </div>
-            <FlagIcon team={homeTeam} className="flex-shrink-0" />
-          </div>
+        {match.status === 'finished' ? (
+          /* ── PARTIDO TERMINADO: resultado real + predicción separados ── */
+          <>
+            {/* Resultado real */}
+            {(() => {
+              const rh = match.home_score_full ?? match.home_score ?? null
+              const ra = match.away_score_full ?? match.away_score ?? null
+              const realHomeWon = rh !== null && ra !== null && rh > ra
+              const realAwayWon = rh !== null && ra !== null && ra > rh
+              return (
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="flex-1 flex items-center gap-2 justify-end">
+                    <span className={`font-medium text-sm ${realHomeWon ? 'font-bold text-white' : 'text-[#8B8FA8]'}`}>
+                      {homeTeam?.name ?? '?'}
+                    </span>
+                    <FlagIcon team={homeTeam} className="flex-shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-1 text-xl font-black flex-shrink-0">
+                    <span className={realHomeWon ? 'text-white' : 'text-[#8B8FA8]'}>{rh ?? '-'}</span>
+                    <span className="text-[#8B8FA8] text-sm">-</span>
+                    <span className={realAwayWon ? 'text-white' : 'text-[#8B8FA8]'}>{ra ?? '-'}</span>
+                  </div>
+                  <div className="flex-1 flex items-center gap-2">
+                    <FlagIcon team={awayTeam} className="flex-shrink-0" />
+                    <span className={`font-medium text-sm ${realAwayWon ? 'font-bold text-white' : 'text-[#8B8FA8]'}`}>
+                      {awayTeam?.name ?? '?'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
 
-          {/* Score */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {match.status === 'finished' ? (
-              <div className="flex items-center gap-1 text-xl font-black">
-                <span>{match.home_score_full ?? match.home_score ?? '-'}</span>
-                <span className="text-[#8B8FA8]">-</span>
-                <span>{match.away_score_full ?? match.away_score ?? '-'}</span>
-              </div>
-            ) : !hasTeams ? (
-              <span className="text-[#8B8FA8] text-sm px-2">vs</span>
-            ) : closed ? (
-              <div className="flex items-center gap-1 text-lg font-bold text-[#8B8FA8]">
-                <span>{prediction?.predicted_home_score ?? '-'}</span>
-                <span>-</span>
-                <span>{prediction?.predicted_away_score ?? '-'}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <input
-                  type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
-                  value={homeGoals}
-                  onChange={e => updateHomeGoals(e.target.value)}
-                  className={inputClass} placeholder="0"
-                />
-                <span className="text-[#8B8FA8]">-</span>
-                <input
-                  type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
-                  value={awayGoals}
-                  onChange={e => updateAwayGoals(e.target.value)}
-                  className={inputClass} placeholder="0"
-                />
+            {/* Predicción del usuario */}
+            {prediction && (() => {
+              const pts = prediction.points_earned
+              const exact = pts >= 5
+              const correct = pts >= 3 && !exact
+              const wrong = pts === 0
+              const predH = prediction.predicted_home_score
+              const predA = prediction.predicted_away_score
+              const predPen = prediction.predicted_penalty_winner
+              return (
+                <div className={`mt-1 flex items-center justify-center gap-2 text-xs rounded-lg px-3 py-1.5 ${
+                  exact ? 'bg-[#00A651]/15 text-[#00A651]' :
+                  correct ? 'bg-[#FFB81C]/15 text-[#FFB81C]' :
+                  'bg-[#C8102E]/10 text-[#8B8FA8]'
+                }`}>
+                  <span className="text-[#8B8FA8]">Tu predicción:</span>
+                  <span className="font-bold">{predH}-{predA}</span>
+                  {predPen && <span className="text-[10px]">({predPen === 'home' ? homeTeam?.name : awayTeam?.name} pen.)</span>}
+                  <span className="font-black ml-1">
+                    {exact ? '✓ +' + pts + ' pts' : correct ? '~ +' + pts + ' pts' : '✗ 0 pts'}
+                  </span>
+                </div>
+              )
+            })()}
+
+            {/* Penalty real */}
+            {knockout && match.went_to_penalties && match.penalty_winner && (
+              <div className="mt-1 text-center text-xs text-[#FFB81C]">
+                Pen. → {match.penalty_winner === 'home' ? homeTeam?.name : awayTeam?.name}
               </div>
             )}
-          </div>
-
-          {/* Away */}
-          <div className="flex-1 flex items-center gap-2">
-            <FlagIcon team={awayTeam} className="flex-shrink-0" />
-            <div className="min-w-0">
-              <div className={`font-medium text-sm leading-tight ${
-                awayPredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
-              }`}>
-                {awayTeam?.name ?? 'Por definir'}
+          </>
+        ) : (
+          /* ── PARTIDO NO TERMINADO ── */
+          <>
+            <div className="flex items-center gap-4">
+              {/* Home */}
+              <div className="flex-1 flex items-center gap-2 justify-end">
+                <div className="text-right min-w-0">
+                  <div className={`font-medium text-sm leading-tight ${isProjected ? 'text-[#6699ff]' : ''}`}>
+                    {homeTeam?.name ?? 'Por definir'}
+                  </div>
+                  {isProjected && homeTeam && (
+                    <div className="text-[10px] text-[#6699ff]/70">proyectado</div>
+                  )}
+                </div>
+                <FlagIcon team={homeTeam} className="flex-shrink-0" />
               </div>
-              {isProjected && awayTeam && (
-                <div className="text-[10px] text-[#6699ff]/70">proyectado</div>
-              )}
+
+              {/* Score / Input */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {!hasTeams ? (
+                  <span className="text-[#8B8FA8] text-sm px-2">vs</span>
+                ) : closed ? (
+                  <div className="flex items-center gap-1 text-lg font-bold text-[#8B8FA8]">
+                    <span>{prediction?.predicted_home_score ?? '-'}</span>
+                    <span>-</span>
+                    <span>{prediction?.predicted_away_score ?? '-'}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
+                      value={homeGoals} onChange={e => updateHomeGoals(e.target.value)}
+                      className={inputClass} placeholder="0" />
+                    <span className="text-[#8B8FA8]">-</span>
+                    <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2}
+                      value={awayGoals} onChange={e => updateAwayGoals(e.target.value)}
+                      className={inputClass} placeholder="0" />
+                  </div>
+                )}
+              </div>
+
+              {/* Away */}
+              <div className="flex-1 flex items-center gap-2">
+                <FlagIcon team={awayTeam} className="flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className={`font-medium text-sm leading-tight ${isProjected ? 'text-[#6699ff]' : ''}`}>
+                    {awayTeam?.name ?? 'Por definir'}
+                  </div>
+                  {isProjected && awayTeam && (
+                    <div className="text-[10px] text-[#6699ff]/70">proyectado</div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Penalty selector — solo en empate de eliminatoria */}
-        {knockout && !closed && hasTeams && isDraw && (
-          <div className="mt-3 border-t border-[#2A2D4A] pt-3">
-            <p className="text-[#8B8FA8] text-xs text-center mb-2">
-              Empate → ¿quién gana en penales?
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => updatePenaltyWinner(penWinner === 'home' ? null : 'home')}
-                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
-                  penWinner === 'home'
-                    ? 'bg-[#C8102E] text-white'
-                    : 'bg-[#0D0D1A] border border-[#2A2D4A] text-[#8B8FA8] hover:text-white'
-                }`}
-              >
-                <FlagIcon team={homeTeam} />
-                <span>{homeTeam?.name}</span>
-              </button>
-              <button
-                onClick={() => updatePenaltyWinner(penWinner === 'away' ? null : 'away')}
-                className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
-                  penWinner === 'away'
-                    ? 'bg-[#C8102E] text-white'
-                    : 'bg-[#0D0D1A] border border-[#2A2D4A] text-[#8B8FA8] hover:text-white'
-                }`}
-              >
-                <FlagIcon team={awayTeam} />
-                <span>{awayTeam?.name}</span>
-              </button>
-            </div>
-          </div>
-        )}
+            {/* Penalty selector — eliminatoria abierta con empate */}
+            {knockout && !closed && hasTeams && isDraw && (
+              <div className="mt-3 border-t border-[#2A2D4A] pt-3">
+                <p className="text-[#8B8FA8] text-xs text-center mb-2">Empate → ¿quién gana en penales?</p>
+                <div className="flex gap-2">
+                  {[{ side: 'home' as const, team: homeTeam }, { side: 'away' as const, team: awayTeam }].map(({ side, team }) => (
+                    <button key={side}
+                      onClick={() => updatePenaltyWinner(penWinner === side ? null : side)}
+                      className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+                        penWinner === side ? 'bg-[#C8102E] text-white' : 'bg-[#0D0D1A] border border-[#2A2D4A] text-[#8B8FA8] hover:text-white'
+                      }`}
+                    >
+                      <FlagIcon team={team} />
+                      <span>{team?.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Penalty result (cerrado o terminado) */}
-        {knockout && (match.went_to_penalties || (closed && prediction?.predicted_penalty_winner)) && (
-          <div className="mt-2 text-center text-xs text-[#FFB81C]">
-            {match.went_to_penalties
-              ? `Pen: ${match.penalty_winner === 'home' ? homeTeam?.name : awayTeam?.name} ✓`
-              : `Tu predicción penales: ${prediction?.predicted_penalty_winner === 'home' ? homeTeam?.name : awayTeam?.name}`}
-          </div>
-        )}
-
-        {/* Points */}
-        {match.status === 'finished' && prediction && prediction.points_earned > 0 && (
-          <div className="mt-2 text-center">
-            <span className="text-[#FFB81C] text-sm font-bold">+{prediction.points_earned} pts</span>
-          </div>
+            {/* Penalty predicho (cerrado) */}
+            {knockout && closed && prediction?.predicted_penalty_winner && (
+              <div className="mt-2 text-center text-xs text-[#8B8FA8]">
+                Penales predichos: {prediction.predicted_penalty_winner === 'home' ? homeTeam?.name : awayTeam?.name}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
