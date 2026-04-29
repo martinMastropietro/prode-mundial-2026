@@ -43,6 +43,14 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isDraw = homeGoals !== '' && awayGoals !== '' && homeGoals === awayGoals
+  const parsedHomeGoals = homeGoals === '' ? null : Number(homeGoals)
+  const parsedAwayGoals = awayGoals === '' ? null : Number(awayGoals)
+  const homePredictedWinner = parsedHomeGoals !== null && parsedAwayGoals !== null && (
+    parsedHomeGoals > parsedAwayGoals || (parsedHomeGoals === parsedAwayGoals && penWinner === 'home')
+  )
+  const awayPredictedWinner = parsedHomeGoals !== null && parsedAwayGoals !== null && (
+    parsedAwayGoals > parsedHomeGoals || (parsedHomeGoals === parsedAwayGoals && penWinner === 'away')
+  )
 
   const doSave = useCallback(async (h: string, a: string, pen: 'home' | 'away' | null) => {
     if (h === '' || a === '') return
@@ -123,7 +131,9 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
           {/* Home */}
           <div className="flex-1 flex items-center gap-2 justify-end">
             <div className="text-right min-w-0">
-              <div className={`font-medium text-sm leading-tight ${isProjected ? 'text-[#6699ff]' : ''}`}>
+              <div className={`font-medium text-sm leading-tight ${
+                homePredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
+              }`}>
                 {homeTeam?.name ?? 'Por definir'}
               </div>
               {isProjected && homeTeam && (
@@ -172,7 +182,9 @@ export default function MatchCard({ match, prediction, groupId, projectedHome, p
           <div className="flex-1 flex items-center gap-2">
             <FlagIcon team={awayTeam} className="flex-shrink-0" />
             <div className="min-w-0">
-              <div className={`font-medium text-sm leading-tight ${isProjected ? 'text-[#6699ff]' : ''}`}>
+              <div className={`font-medium text-sm leading-tight ${
+                awayPredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
+              }`}>
                 {awayTeam?.name ?? 'Por definir'}
               </div>
               {isProjected && awayTeam && (

@@ -80,6 +80,7 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
           matches={matches.filter(m => m.phase !== 'group')}
           projectedQualifiers={qualifiers}
           projectedMatches={bracketProjectionObj}
+          predictionMap={predictionMap}
         />
       </section>
 

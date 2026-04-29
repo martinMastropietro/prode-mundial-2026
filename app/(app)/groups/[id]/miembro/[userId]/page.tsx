@@ -119,6 +119,7 @@ export default async function MemberPredictionPage({ params }: Props) {
       <MatchListReadOnly
         matches={matches}
         predictionMap={predictionMap}
+        groupStandings={standings}
         bracketProjection={bracketProjectionObj}
       />
     </div>

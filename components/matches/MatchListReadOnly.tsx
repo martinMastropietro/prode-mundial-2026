@@ -6,6 +6,8 @@ import { PHASE_LABELS } from '@/lib/utils/points'
 import { formatMatchDate } from '@/lib/utils/dates'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
 import FlagIcon from '@/components/ui/FlagIcon'
+import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
+import type { Standing } from '@/lib/utils/simulate'
 import type { MatchProjection } from '@/lib/utils/simulate'
 
 const PHASE_ORDER = ['group','round_of_32','round_of_16','quarterfinal','semifinal','third_place','final']
@@ -15,6 +17,7 @@ type Props = {
   matches: Match[]
   predictionMap: Map<string, Prediction>
   bracketProjection: Record<number, { home: Team | null; away: Team | null }>
+  groupStandings?: Map<string, Standing[]>
 }
 
 function PredictionCard({ match, prediction, projHome, projAway }: {
@@ -27,6 +30,15 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
   const awayTeam = match.away_team ?? projAway ?? null
   const finished = match.status === 'finished'
   const isProjected = !match.home_team && !!projHome
+  const homeScore = prediction?.predicted_home_score
+  const awayScore = prediction?.predicted_away_score
+  const hasPredictionScore = homeScore !== undefined && awayScore !== undefined
+  const homePredictedWinner = hasPredictionScore && (
+    homeScore > awayScore || (homeScore === awayScore && prediction?.predicted_penalty_winner === 'home')
+  )
+  const awayPredictedWinner = hasPredictionScore && (
+    awayScore > homeScore || (homeScore === awayScore && prediction?.predicted_penalty_winner === 'away')
+  )
 
   return (
     <div className="bg-[#1A1A2E] rounded-xl border border-[#2A2D4A] p-4">
@@ -44,7 +56,9 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
       <div className="flex items-center gap-4">
         {/* Local */}
         <div className="flex-1 flex items-center gap-2 justify-end">
-          <span className={`font-medium text-sm text-right ${isProjected ? 'text-[#6699ff]' : ''}`}>
+          <span className={`font-medium text-sm text-right ${
+            homePredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
+          }`}>
             {homeTeam?.name ?? 'Por definir'}
           </span>
           <FlagIcon team={homeTeam} />
@@ -86,7 +100,9 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
         {/* Visitante */}
         <div className="flex-1 flex items-center gap-2">
           <FlagIcon team={awayTeam} />
-          <span className={`font-medium text-sm ${isProjected ? 'text-[#6699ff]' : ''}`}>
+          <span className={`font-medium text-sm ${
+            awayPredictedWinner ? 'text-[#FFB81C] font-black' : isProjected ? 'text-[#6699ff]' : ''
+          }`}>
             {awayTeam?.name ?? 'Por definir'}
           </span>
         </div>
@@ -95,7 +111,7 @@ function PredictionCard({ match, prediction, projHome, projAway }: {
   )
 }
 
-export default function MatchListReadOnly({ matches, predictionMap, bracketProjection }: Props) {
+export default function MatchListReadOnly({ matches, predictionMap, bracketProjection, groupStandings }: Props) {
   const [selectedPhase, setSelectedPhase] = useState('group')
   const [selectedGroup, setSelectedGroup] = useState('all')
 
@@ -156,6 +172,7 @@ export default function MatchListReadOnly({ matches, predictionMap, bracketProje
           <KnockoutBracket
             matches={matches.filter(m => m.phase !== 'group')}
             projectedMatches={bracketProjection as Record<number, MatchProjection>}
+            predictionMap={predictionMap}
           />
         </div>
       )}
@@ -168,6 +185,15 @@ export default function MatchListReadOnly({ matches, predictionMap, bracketProje
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-xs font-black text-[#FFB81C] tracking-widest uppercase">{label}</span>
                 <div className="flex-1 h-px bg-[#2A2D4A]" />
+              </div>
+            )}
+            {isGroupPhase && groupStandings && (selectedGroup !== 'all' || items[0]?.group_code) && (
+              <div className="mb-3">
+                <GroupStandingsTables
+                  standings={groupStandings}
+                  groupFilter={selectedGroup === 'all' ? items[0]?.group_code : selectedGroup}
+                  compact
+                />
               </div>
             )}
             <div className="space-y-3">

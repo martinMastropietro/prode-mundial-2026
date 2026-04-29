@@ -1,4 +1,4 @@
-import type { Match, MatchPhase, Team } from '@/types'
+import type { Match, MatchPhase, Prediction, Team } from '@/types'
 import { R32_BRACKET } from '@/lib/utils/simulate'
 import type { MatchProjection, ProjectedQualifiers } from '@/lib/utils/simulate'
 import FlagIcon from '@/components/ui/FlagIcon'
@@ -37,12 +37,13 @@ const BRACKET_ORDER = {
 }
 
 function MatchBox({
-  match, highlight, projectedHome, projectedAway
+  match, highlight, projectedHome, projectedAway, prediction
 }: {
   match: BracketMatch | null
   highlight?: boolean
   projectedHome?: Team | null
   projectedAway?: Team | null
+  prediction?: Prediction
 }) {
   if (!match) {
     return (
@@ -61,8 +62,12 @@ function MatchBox({
   }
 
   const finished = match.status === 'finished'
-  const homeWon = finished && (match.home_score_full ?? 0) > (match.away_score_full ?? 0)
-  const awayWon = finished && (match.away_score_full ?? 0) > (match.home_score_full ?? 0)
+  const homeScore = finished ? match.home_score_full ?? match.home_score : prediction?.predicted_home_score
+  const awayScore = finished ? match.away_score_full ?? match.away_score : prediction?.predicted_away_score
+  const penWinner = finished ? match.penalty_winner : prediction?.predicted_penalty_winner
+  const hasScore = homeScore !== null && homeScore !== undefined && awayScore !== null && awayScore !== undefined
+  const homeWon = hasScore && (homeScore > awayScore || (homeScore === awayScore && penWinner === 'home'))
+  const awayWon = hasScore && (awayScore > homeScore || (homeScore === awayScore && penWinner === 'away'))
   const homeTeam = match.home_team ?? projectedHome
   const awayTeam = match.away_team ?? projectedAway
   const homeProj = !match.home_team && !!projectedHome
@@ -73,11 +78,11 @@ function MatchBox({
       highlight ? 'border-[#FFB81C]/50 bg-[#FFB81C]/5' : 'border-[#2A2D4A] bg-[#1A1A2E]'
     }`}>
       {/* Home row */}
-      <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${homeWon ? 'bg-[#C8102E]/20' : ''}`}>
+      <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${homeWon ? 'bg-[#00A651]/15' : ''}`}>
         <div className="flex items-center gap-1.5 min-w-0">
           <FlagIcon team={homeTeam} />
           <span className={`truncate leading-tight text-xs ${
-            homeWon ? 'font-bold text-white' :
+            homeWon ? 'font-black text-[#FFB81C]' :
             homeProj ? 'text-[#6699ff] italic' :
             homeTeam ? 'text-[#D0D0D0]' : 'text-[#8B8FA8]'
           }`}>
@@ -86,18 +91,18 @@ function MatchBox({
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           {homeProj && <span className="text-[10px] text-[#6699ff]">proj.</span>}
-          {finished && <span className={`font-black ${homeWon ? 'text-white' : 'text-[#8B8FA8]'}`}>{match.home_score_full ?? match.home_score ?? 0}</span>}
+          {hasScore && <span className={`font-black ${homeWon ? 'text-[#FFB81C]' : 'text-[#8B8FA8]'}`}>{homeScore}</span>}
         </div>
       </div>
 
       <div className="border-t border-[#2A2D4A]" />
 
       {/* Away row */}
-      <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${awayWon ? 'bg-[#C8102E]/20' : ''}`}>
+      <div className={`flex items-center justify-between px-2 py-1.5 gap-1 ${awayWon ? 'bg-[#00A651]/15' : ''}`}>
         <div className="flex items-center gap-1.5 min-w-0">
           <FlagIcon team={awayTeam} />
           <span className={`truncate leading-tight text-xs ${
-            awayWon ? 'font-bold text-white' :
+            awayWon ? 'font-black text-[#FFB81C]' :
             awayProj ? 'text-[#6699ff] italic' :
             awayTeam ? 'text-[#D0D0D0]' : 'text-[#8B8FA8]'
           }`}>
@@ -106,7 +111,7 @@ function MatchBox({
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           {awayProj && <span className="text-[10px] text-[#6699ff]">proj.</span>}
-          {finished && <span className={`font-black ${awayWon ? 'text-white' : 'text-[#8B8FA8]'}`}>{match.away_score_full ?? match.away_score ?? 0}</span>}
+          {hasScore && <span className={`font-black ${awayWon ? 'text-[#FFB81C]' : 'text-[#8B8FA8]'}`}>{awayScore}</span>}
         </div>
       </div>
 
@@ -119,12 +124,13 @@ function MatchBox({
   )
 }
 
-function RoundColumn({ label, matchNums, byNum, projectedQualifiers, projectedMatches }: {
+function RoundColumn({ label, matchNums, byNum, projectedQualifiers, projectedMatches, predictionMap }: {
   label: string
   matchNums: number[]
   byNum: Map<number, Match>
   projectedQualifiers?: ProjectedQualifiers
   projectedMatches?: Record<number, MatchProjection>
+  predictionMap?: Map<string, Prediction>
 }) {
   return (
     <div className="flex flex-col flex-shrink-0" style={{ alignSelf: 'stretch' }}>
@@ -143,6 +149,7 @@ function RoundColumn({ label, matchNums, byNum, projectedQualifiers, projectedMa
               match={bm}
               projectedHome={projH}
               projectedAway={projA}
+              prediction={m ? predictionMap?.get(m.id) : undefined}
             />
           )
         })}
@@ -155,10 +162,12 @@ export default function KnockoutBracket({
   matches,
   projectedQualifiers,
   projectedMatches,
+  predictionMap,
 }: {
   matches: Match[]
   projectedQualifiers?: ProjectedQualifiers
   projectedMatches?: Record<number, MatchProjection>
+  predictionMap?: Map<string, Prediction>
 }) {
   const byNum = new Map(matches.map(m => [m.match_number, m]))
   const byPhase: Partial<Record<MatchPhase, Match[]>> = {}
@@ -173,7 +182,7 @@ export default function KnockoutBracket({
   const hasProjection = !!projectedQualifiers || !!projectedMatches
 
   const divider = <div className="w-px bg-gradient-to-b from-transparent via-[#2A2D4A] to-transparent self-stretch flex-shrink-0" />
-  const colProps = { byNum, projectedQualifiers, projectedMatches }
+  const colProps = { byNum, projectedQualifiers, projectedMatches, predictionMap }
 
   return (
     <div className="overflow-x-auto pb-4">
