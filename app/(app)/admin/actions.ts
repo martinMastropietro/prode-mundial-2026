@@ -127,6 +127,62 @@ export async function saveMatchResult(formData: FormData) {
   revalidateAdminResultViews()
 }
 
+export async function recalculateAllPoints() {
+  const admin = await requireAdminClient()
+  if (!admin) return { error: 'Sin permisos' }
+
+  // Obtener todas las predicciones de partidos finalizados
+  const { data: finishedMatches } = await admin
+    .from('matches')
+    .select('id, match_number, home_score_full, away_score_full, penalty_winner')
+    .eq('status', 'finished')
+    .not('home_score_full', 'is', null)
+
+  if (!finishedMatches || finishedMatches.length === 0) {
+    return { ok: true, updated: 0 }
+  }
+
+  let updated = 0
+
+  for (const match of finishedMatches) {
+    const { data: preds } = await admin
+      .from('predictions')
+      .select('id, predicted_home_score, predicted_away_score, predicted_penalty_winner')
+      .eq('match_id', match.id)
+
+    if (!preds || preds.length === 0) continue
+
+    const rh = match.home_score_full as number
+    const ra = match.away_score_full as number
+    const realPen = match.penalty_winner as 'home' | 'away' | null
+
+    const realWinner = rh > ra ? 'home' : ra > rh ? 'away' : realPen ?? 'draw'
+
+    await Promise.all(preds.map(pred => {
+      const ph = pred.predicted_home_score as number
+      const pa = pred.predicted_away_score as number
+      const pp = pred.predicted_penalty_winner as 'home' | 'away' | null
+
+      const predWinner = ph > pa ? 'home' : pa > ph ? 'away' : pp ?? 'draw'
+
+      const exact = ph === rh && pa === ra && (!pp || pp === realPen)
+      let base = exact ? 5 : predWinner === realWinner ? 3 : 0
+      let bonus = 0
+      if (match.match_number === 104 && predWinner === realWinner) bonus = 25
+      if (match.match_number === 103 && predWinner === realWinner) bonus = 5
+
+      updated++
+      return admin.from('predictions').update({
+        points_earned: base + bonus,
+        calculated_at: new Date().toISOString(),
+      }).eq('id', pred.id)
+    }))
+  }
+
+  revalidateAdminResultViews()
+  return { ok: true, updated }
+}
+
 export async function startMatch(formData: FormData) {
   const admin = await requireAdminClient()
   if (!admin) return
