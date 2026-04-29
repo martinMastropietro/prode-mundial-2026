@@ -1,10 +1,10 @@
 import Link from 'next/link'
 
 const navItems = [
-  { href: '/dashboard', label: 'Inicio', icon: '🏠' },
-  { href: '/calendario', label: 'Fixture y tablas', icon: '📅' },
-  { href: '/groups/create', label: 'Crear un grupo', icon: '➕' },
-  { href: '/profile', label: 'Perfil', icon: '👤' },
+  { href: '/dashboard',  label: 'Inicio',   icon: '🏠' },
+  { href: '/calendario', label: 'Fixture',   icon: '📅' },
+  { href: '/groups',     label: 'Grupos',    icon: '👥' },
+  { href: '/profile',    label: 'Perfil',    icon: '👤' },
 ]
 
 export default function MobileNav() {
