@@ -19,6 +19,32 @@ export function isMatchClosed(matchDate: string | null, status: string): boolean
   return new Date(matchDate) <= new Date()
 }
 
+// Detecta "en vivo" por tiempo cuando el admin no lo marcó todavía
+// Considera en vivo entre el inicio y +150 minutos (incluye prórroga y penales)
+export function isMatchAutoLive(matchDate: string | null, status: string): boolean {
+  if (status === 'live') return true
+  if (status !== 'scheduled' || !matchDate) return false
+  const now = Date.now()
+  const start = new Date(matchDate).getTime()
+  const minutesSince = (now - start) / 60000
+  return minutesSince >= 0 && minutesSince < 150
+}
+
+export type DisplayStatus = 'open' | 'live' | 'finished' | 'cancelled' | 'closed'
+
+export function getDisplayStatus(matchDate: string | null, status: string): DisplayStatus {
+  if (status === 'finished') return 'finished'
+  if (status === 'cancelled') return 'cancelled'
+  if (status === 'live') return 'live'
+  if (!matchDate) return 'open'
+  const now = Date.now()
+  const start = new Date(matchDate).getTime()
+  const minutesSince = (now - start) / 60000
+  if (minutesSince >= 0 && minutesSince < 150) return 'live'
+  if (minutesSince >= 150) return 'closed'
+  return 'open'
+}
+
 export function timeUntilMatch(matchDate: string | null): string {
   if (!matchDate) return ''
   const diff = new Date(matchDate).getTime() - Date.now()

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { clearMatchResult, saveMatchResult } from './actions'
+import { clearMatchResult, saveMatchResult, startMatch } from './actions'
 import type { Match } from '@/types'
 import { PHASE_LABELS } from '@/lib/utils/points'
 import FlagIcon from '@/components/ui/FlagIcon'
@@ -18,11 +18,22 @@ function MatchResultRow({ match }: { match: Match }) {
   const [penWinner, setPenWinner] = useState<'home' | 'away' | ''>(match.penalty_winner ?? '')
   const [saving, setSaving] = useState(false)
   const [clearing, setClearing] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [saved, setSaved] = useState(false)
 
   const finished = match.status === 'finished'
+  const live = match.status === 'live'
   const isDraw = homeScore !== '' && awayScore !== '' && homeScore === awayScore
   const isKnockout = match.phase !== 'group'
+
+  async function handleStart() {
+    setStarting(true)
+    const fd = new FormData()
+    fd.append('match_id', match.id)
+    await startMatch(fd)
+    router.refresh()
+    setStarting(false)
+  }
 
   async function handleSave() {
     if (homeScore === '' || awayScore === '') return
@@ -112,7 +123,27 @@ function MatchResultRow({ match }: { match: Match }) {
           </div>
         )}
 
-        {/* Estado / Botón */}
+        {/* Botón: Iniciar partido (solo si programado y hora pasó) */}
+        {!finished && !live && (
+          <button
+            onClick={handleStart}
+            disabled={starting}
+            className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#00A651]/20 hover:bg-[#00A651]/30 text-[#00A651] border border-[#00A651]/30 disabled:opacity-40 transition-colors flex items-center gap-1"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] animate-pulse" />
+            {starting ? '...' : 'Iniciar'}
+          </button>
+        )}
+
+        {/* Estado "en vivo" */}
+        {live && (
+          <span className="px-3 py-1.5 text-xs font-bold text-[#00A651] flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] animate-pulse" />
+            En juego
+          </span>
+        )}
+
+        {/* Botón: Marcar terminado */}
         <button
           onClick={handleSave}
           disabled={saving || clearing || homeScore === '' || awayScore === ''}

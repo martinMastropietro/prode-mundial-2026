@@ -162,6 +162,15 @@ export async function saveMatchResult(formData: FormData) {
   revalidateAdminResultViews()
 }
 
+export async function startMatch(formData: FormData) {
+  const admin = await requireAdminClient()
+  if (!admin) return
+  const matchId = formData.get('match_id') as string
+  if (!matchId) return
+  await admin.from('matches').update({ status: 'live' }).eq('id', matchId)
+  revalidateAdminResultViews()
+}
+
 export async function clearMatchResult(formData: FormData) {
   const admin = await requireAdminClient()
   if (!admin) return

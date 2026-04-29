@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { isMatchClosed, formatMatchDate } from '@/lib/utils/dates'
+import { isMatchClosed, getDisplayStatus, formatMatchDate } from '@/lib/utils/dates'
 import { savePrediction } from '@/app/(app)/groups/[id]/matches/actions'
 import type { Match, Prediction, Team } from '@/types'
 import FlagIcon from '@/components/ui/FlagIcon'
@@ -126,16 +126,25 @@ export default function MatchCard({ match, prediction, groupId, predictionMode, 
                 {status === 'saving' ? '⏳' : '✓'}
               </span>
             )}
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              match.status === 'finished' ? 'bg-[#8B8FA8]/20 text-[#8B8FA8]' :
-              match.status === 'live'     ? 'bg-[#00A651]/20 text-[#00A651]' :
-              closed                      ? 'bg-[#C8102E]/20 text-[#C8102E]' :
-                                            'bg-[#003087]/20 text-[#6699ff]'
-            }`}>
-              {match.status === 'finished' ? 'Finalizado' :
-               match.status === 'live'     ? 'En juego' :
-               closed                      ? 'Cerrado'   : 'Abierto'}
-            </span>
+            {(() => {
+              const ds = getDisplayStatus(match.match_date, match.status)
+              const isLive = ds === 'live'
+              return (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                  match.status === 'finished' || ds === 'finished' ? 'bg-[#8B8FA8]/20 text-[#8B8FA8]' :
+                  isLive                                            ? 'bg-[#00A651]/20 text-[#00A651]' :
+                  closed                                            ? 'bg-[#C8102E]/20 text-[#C8102E]' :
+                                                                      'bg-[#003087]/20 text-[#6699ff]'
+                }`}>
+                  {isLive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00A651] animate-pulse flex-shrink-0" />
+                  )}
+                  {match.status === 'finished' ? 'Finalizado' :
+                   isLive                       ? 'En juego' :
+                   closed                       ? 'Cerrado'  : 'Abierto'}
+                </span>
+              )
+            })()}
           </div>
         </div>
 
