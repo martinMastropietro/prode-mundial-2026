@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { isPredictionOpenForMode, normalizePredictionMode } from '@/lib/utils/predictionModes'
 
 export async function savePrediction(formData: FormData) {
   const matchId = formData.get('match_id') as string
@@ -17,14 +18,21 @@ export async function savePrediction(formData: FormData) {
   if (!user) return
 
   // Server-side closure check
-  const { data: match } = await supabase
-    .from('matches')
-    .select('match_date, status')
-    .eq('id', matchId)
-    .single()
+  const [{ data: match }, { data: group }] = await Promise.all([
+    supabase
+      .from('matches')
+      .select('match_date, status, phase')
+      .eq('id', matchId)
+      .single(),
+    supabase
+      .from('groups')
+      .select('prediction_mode')
+      .eq('id', groupId)
+      .single(),
+  ])
 
-  if (!match || match.status !== 'scheduled') return
-  if (match.match_date && new Date(match.match_date) <= new Date()) return
+  const mode = normalizePredictionMode(group?.prediction_mode)
+  if (!match || !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status)) return
 
   const upsertData: Record<string, unknown> = {
     user_id: user.id,

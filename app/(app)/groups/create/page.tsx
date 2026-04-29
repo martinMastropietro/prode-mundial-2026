@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react'
 import { createGroup } from './actions'
+import { PREDICTION_MODE_OPTIONS } from '@/lib/utils/predictionModes'
 
 export default function CreateGroupPage() {
   const [state, action, pending] = useActionState(createGroup, undefined)
@@ -10,6 +11,7 @@ export default function CreateGroupPage() {
   const [publicId, setPublicId] = useState(state?.values?.public_id ?? '')
   const [name, setName] = useState(state?.values?.name ?? '')
   const [password, setPassword] = useState(state?.values?.access_password ?? '')
+  const [predictionMode, setPredictionMode] = useState(state?.values?.prediction_mode ?? 'full_bracket')
 
   return (
     <div className="max-w-md mx-auto">
@@ -82,6 +84,38 @@ export default function CreateGroupPage() {
             {state?.errors?.access_password && (
               <p className="text-[#C8102E] text-xs mt-1">{state.errors.access_password[0]}</p>
             )}
+          </div>
+
+          {/* Modalidad */}
+          <div className="space-y-3 pt-1">
+            <p className="text-sm font-medium text-[#8B8FA8] uppercase tracking-wide">Modalidad de prode</p>
+            <div className="space-y-2">
+              {PREDICTION_MODE_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className={`block rounded-xl border p-3 cursor-pointer transition-colors ${
+                    predictionMode === option.value
+                      ? 'border-[#C8102E] bg-[#C8102E]/10'
+                      : 'border-[#2A2D4A] bg-[#0D0D1A] hover:border-[#2A2D4A]/80'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="prediction_mode"
+                      value={option.value}
+                      checked={predictionMode === option.value}
+                      onChange={() => setPredictionMode(option.value)}
+                      className="mt-1 accent-[#C8102E]"
+                    />
+                    <div>
+                      <div className="text-sm font-bold">{option.label}</div>
+                      <div className="text-xs text-[#8B8FA8] mt-0.5">{option.description}</div>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Opciones del grupo */}

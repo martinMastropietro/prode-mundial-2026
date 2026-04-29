@@ -26,6 +26,7 @@ export type MatchPhase =
   | 'final'
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'cancelled'
+export type PredictionMode = 'phase_by_phase' | 'full_bracket' | 'hybrid'
 
 export type Match = {
   id: string
@@ -57,6 +58,7 @@ export type Group = {
   access_code: string
   owner_id: string
   max_members: number
+  prediction_mode: PredictionMode
   predictions_visible: boolean
   has_top_scorer: boolean
   has_top_assist: boolean

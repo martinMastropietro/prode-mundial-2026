@@ -36,7 +36,7 @@ export default async function GroupMatchesPage({ params }: Props) {
       .eq('group_id', groupId),
     supabase
       .from('groups')
-      .select('has_top_scorer, has_top_assist, has_mvp')
+      .select('prediction_mode, has_top_scorer, has_top_assist, has_mvp')
       .eq('id', groupId)
       .single(),
     supabase
@@ -108,6 +108,7 @@ export default async function GroupMatchesPage({ params }: Props) {
         matches={matches}
         teams={teams}
         groupId={groupId}
+        predictionMode={group?.prediction_mode}
         initialPredictions={Object.fromEntries(predictionMap)}
       />
     </div>

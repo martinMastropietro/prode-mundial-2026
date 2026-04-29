@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import KnockoutBracket from '@/components/calendario/KnockoutBracket'
 import MatchList from '@/components/matches/MatchList'
 import type { Match, Prediction, Team } from '@/types'
+import { normalizePredictionMode, PREDICTION_MODE_LABELS } from '@/lib/utils/predictionModes'
 import {
   simulateGroupStandings,
   buildProjectedQualifiers,
@@ -14,10 +15,12 @@ type Props = {
   matches: Match[]
   teams: Team[]
   groupId: string
+  predictionMode?: string
   initialPredictions: Record<string, Prediction>
 }
 
-export default function PredictionsPanel({ matches, teams, groupId, initialPredictions }: Props) {
+export default function PredictionsPanel({ matches, teams, groupId, predictionMode, initialPredictions }: Props) {
+  const mode = normalizePredictionMode(predictionMode)
   const [predictionMap, setPredictionMap] = useState(
     () => new Map<string, Prediction>(Object.entries(initialPredictions))
   )
@@ -74,7 +77,7 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
     <>
       <section className="mb-8">
         <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
-          ⚡ Cuadro proyectado desde tus predicciones — se actualiza automáticamente
+          ⚡ {PREDICTION_MODE_LABELS[mode]} — cuadro proyectado desde tus predicciones
         </div>
         <KnockoutBracket
           matches={matches.filter(m => m.phase !== 'group')}
@@ -88,6 +91,7 @@ export default function PredictionsPanel({ matches, teams, groupId, initialPredi
         matches={matches}
         predictionMap={predictionMap}
         groupId={groupId}
+        predictionMode={mode}
         bracketProjection={bracketProjectionObj}
         onPredictionChange={updatePrediction}
         groupStandings={standings}

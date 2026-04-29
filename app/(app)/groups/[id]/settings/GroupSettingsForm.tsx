@@ -2,11 +2,13 @@
 
 import { useActionState, useState } from 'react'
 import { updateGroupSettings } from './actions'
+import { normalizePredictionMode, PREDICTION_MODE_DESCRIPTIONS, PREDICTION_MODE_LABELS } from '@/lib/utils/predictionModes'
 
 type Group = {
   id: string
   name: string
   public_id: string
+  prediction_mode?: string
   predictions_visible: boolean
 }
 
@@ -22,6 +24,7 @@ type Props = { group: Group; members: Member[] }
 export default function GroupSettingsForm({ group, members }: Props) {
   const [state, action, pending] = useActionState(updateGroupSettings, undefined)
   const [copied, setCopied] = useState(false)
+  const predictionMode = normalizePredictionMode(group.prediction_mode)
 
   function copyInviteInfo() {
     navigator.clipboard.writeText(`ID: ${group.public_id}`)
@@ -55,6 +58,12 @@ export default function GroupSettingsForm({ group, members }: Props) {
         <h2 className="font-bold mb-4">Configuración</h2>
         <form action={action} className="space-y-4">
           <input type="hidden" name="group_id" value={group.id} />
+
+          <div className="rounded-xl border border-[#2A2D4A] bg-[#0D0D1A] p-3">
+            <div className="text-sm font-bold">{PREDICTION_MODE_LABELS[predictionMode]}</div>
+            <p className="text-[#8B8FA8] text-xs mt-1">{PREDICTION_MODE_DESCRIPTIONS[predictionMode]}</p>
+            <p className="text-[#8B8FA8] text-[11px] mt-2">La modalidad se define al crear el grupo.</p>
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import MatchCard from './MatchCard'
 import type { Match, Prediction, Team } from '@/types'
+import type { PredictionMode } from '@/lib/utils/predictionModes'
 import type { Standing } from '@/lib/utils/simulate'
 import { PHASE_LABELS } from '@/lib/utils/points'
 import GroupStandingsTables from '@/components/standings/GroupStandingsTables'
@@ -11,6 +12,7 @@ type Props = {
   matches: Match[]
   predictionMap: Map<string, Prediction>
   groupId: string
+  predictionMode?: PredictionMode
   bracketProjection?: Record<number, { home: Team | null; away: Team | null }>
   onPredictionChange?: (
     matchId: string,
@@ -28,6 +30,7 @@ export default function MatchList({
   matches,
   predictionMap,
   groupId,
+  predictionMode,
   bracketProjection,
   onPredictionChange,
   groupStandings,
@@ -129,6 +132,7 @@ export default function MatchList({
                       match={match}
                       prediction={predictionMap.get(match.id)}
                       groupId={groupId}
+                      predictionMode={predictionMode}
                       projectedHome={proj?.home ?? undefined}
                       projectedAway={proj?.away ?? undefined}
                       onPredictionChange={onPredictionChange}

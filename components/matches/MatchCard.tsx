@@ -5,11 +5,13 @@ import { isMatchClosed, formatMatchDate } from '@/lib/utils/dates'
 import { savePrediction } from '@/app/(app)/groups/[id]/matches/actions'
 import type { Match, Prediction, Team } from '@/types'
 import FlagIcon from '@/components/ui/FlagIcon'
+import { isPredictionOpenForMode, normalizePredictionMode, type PredictionMode } from '@/lib/utils/predictionModes'
 
 type Props = {
   match: Match
   prediction?: Prediction
   groupId: string
+  predictionMode?: PredictionMode
   projectedHome?: Team | null
   projectedAway?: Team | null
   onPredictionChange?: (
@@ -24,8 +26,11 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const isKnockout = (phase: string) => phase !== 'group'
 
-export default function MatchCard({ match, prediction, groupId, projectedHome, projectedAway, onPredictionChange }: Props) {
-  const closed = isMatchClosed(match.match_date, match.status)
+export default function MatchCard({ match, prediction, groupId, predictionMode, projectedHome, projectedAway, onPredictionChange }: Props) {
+  const mode = normalizePredictionMode(predictionMode)
+  const closed = mode === 'full_bracket'
+    ? isMatchClosed(match.match_date, match.status)
+    : !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status)
   const knockout = isKnockout(match.phase)
 
   // Use real teams if available, otherwise projected

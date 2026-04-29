@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { RankingRow } from '@/types'
+import { normalizePredictionMode, PREDICTION_MODE_LABELS } from '@/lib/utils/predictionModes'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -37,6 +38,7 @@ export default async function GroupHomePage({ params }: Props) {
   const ranking = (rankingRows ?? []) as RankingRow[]
   const myRank = ranking.findIndex((r) => r.user_id === user!.id) + 1
   const medals = ['🥇', '🥈', '🥉']
+  const predictionMode = normalizePredictionMode(group.prediction_mode)
 
   return (
     <div className="space-y-6">
@@ -47,6 +49,9 @@ export default async function GroupHomePage({ params }: Props) {
             <h1 className="text-2xl font-black">{group.name}</h1>
             <p className="text-[#8B8FA8] text-sm font-mono mt-0.5">{group.public_id}</p>
             <div className="flex gap-2 mt-2 flex-wrap">
+              <span className="text-xs px-2 py-0.5 bg-[#003087]/30 text-[#6699ff] rounded-full">
+                {PREDICTION_MODE_LABELS[predictionMode]}
+              </span>
               {group.predictions_visible && (
                 <span className="text-xs px-2 py-0.5 bg-[#003087]/30 text-[#6699ff] rounded-full">Predicciones visibles</span>
               )}
