@@ -61,15 +61,19 @@ export default function MatchCard({ match, prediction, groupId, predictionMode, 
   const doSave = useCallback(async (h: string, a: string, pen: 'home' | 'away' | null) => {
     if (h === '' || a === '') return
     setStatus('saving')
-    const fd = new FormData()
-    fd.append('match_id', match.id)
-    fd.append('group_id', groupId)
-    fd.append('home_goals', h)
-    fd.append('away_goals', a)
-    if (pen) fd.append('penalty_winner', pen)
-    await savePrediction(fd)
-    setStatus('saved')
-    setTimeout(() => setStatus('idle'), 1500)
+    try {
+      const fd = new FormData()
+      fd.append('match_id', match.id)
+      fd.append('group_id', groupId)
+      fd.append('home_goals', h)
+      fd.append('away_goals', a)
+      if (pen) fd.append('penalty_winner', pen)
+      await savePrediction(fd)
+      setStatus('saved')
+    } catch {
+      setStatus('error')
+    }
+    setTimeout(() => setStatus('idle'), 2000)
   }, [match.id, groupId])
 
   // Auto-save al cambiar score
