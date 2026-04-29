@@ -108,9 +108,16 @@ export default function MatchCard({ match, prediction, groupId, predictionMode, 
     }`}>
       <div className="p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[#8B8FA8] text-xs">{formatMatchDate(match.match_date)}</span>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[#8B8FA8] text-xs flex-shrink-0">{formatMatchDate(match.match_date)}</span>
+            {(match.city || match.stadium) && (
+              <span className="text-[#8B8FA8]/60 text-xs truncate hidden sm:block">
+                {[match.city, match.stadium].filter(Boolean).join(', ')}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
             {!closed && hasTeams && status !== 'idle' && (
               <span className={`text-xs ${
                 status === 'saving' ? 'text-[#8B8FA8]' :

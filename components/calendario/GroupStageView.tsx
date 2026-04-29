@@ -79,7 +79,9 @@ export default function GroupStageView({ matches }: { matches: Match[] }) {
                 <div className="text-[#8B8FA8] text-xs mb-2">
                   J{match.match_number} · {formatTime(match.match_date)}
                   {match.group_code && <span> · Grupo {match.group_code}</span>}
-                  {match.city && <span> · {match.city}</span>}
+                  {(match.city || match.stadium) && (
+                    <span> · {[match.city, match.stadium].filter(Boolean).join(', ')}</span>
+                  )}
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   {/* Local */}

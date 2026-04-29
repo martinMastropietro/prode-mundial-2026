@@ -16,11 +16,11 @@ type UpcomingMatch = {
 }
 
 function matchMeta(match: UpcomingMatch) {
+  const venue = [match.city, match.stadium].filter(Boolean).join(', ')
   return [
     PHASE_LABELS[match.phase] ?? match.phase,
     match.phase === 'group' && match.group_code ? `Grupo ${match.group_code}` : null,
-    match.city,
-    match.stadium,
+    venue || null,
   ].filter(Boolean).join(' · ')
 }
 
