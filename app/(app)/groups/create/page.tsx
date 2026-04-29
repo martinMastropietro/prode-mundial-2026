@@ -100,17 +100,37 @@ export default function CreateGroupPage() {
               </button>
             </div>
             {showModeInfo && (
-              <div className="rounded-xl border border-[#2A2D4A] bg-[#0D0D1A] p-3 text-xs text-[#8B8FA8] space-y-2">
+              <div className="rounded-xl border border-[#2A2D4A] bg-[#0D0D1A] p-3 text-xs text-[#8B8FA8] space-y-3">
                 <p>
                   <span className="font-bold text-white">Fase por fase:</span> se predice grupos antes del debut.
                   Después se abre cada fase eliminatoria cuando estén los cruces oficiales y se cierra al empezar el primer partido de esa fase.
+                  <span className="block mt-1 text-[#FFB81C]">Resultado exacto: 5 pts · Ganador/empate correcto: 3 pts</span>
                 </p>
                 <p>
                   <span className="font-bold text-white">Cuadro completo:</span> se predice todo desde el inicio, incluyendo el camino proyectado hasta la final.
+                  <span className="block mt-1 text-[#FFB81C]">Resultado exacto: 5 pts · Ganador/empate correcto: 3 pts · Final: +25 pts por campeón · Tercer puesto: +5 pts</span>
                 </p>
-                <p>
-                  <span className="font-bold text-white">Híbrido:</span> se predice el cuadro completo pre-torneo con puntaje alto. Más adelante se pueden sumar votaciones complementarias de cruces reales con menos puntos.
-                </p>
+                <div>
+                  <p>
+                    <span className="font-bold text-white">Híbrido:</span> se predice el cuadro completo pre-torneo con puntaje alto. Más adelante se pueden sumar votaciones complementarias de cruces reales con menos puntos.
+                  </p>
+                  <div className="mt-2 overflow-hidden rounded-lg border border-[#2A2D4A]">
+                    {[
+                      ['Fase de grupos', '3', '1'],
+                      ['16avos', '6', '3'],
+                      ['8vos', '9', '6'],
+                      ['4tos', '15', '10'],
+                      ['Semis', '25', '18'],
+                      ['Final', '50', '35'],
+                    ].map(([phase, exact, winner]) => (
+                      <div key={phase} className="grid grid-cols-[1fr_4rem_4rem] border-b border-[#2A2D4A] last:border-0">
+                        <span className="px-2 py-1.5 text-white">{phase}</span>
+                        <span className="px-2 py-1.5 text-center text-[#FFB81C]">{exact} exacto</span>
+                        <span className="px-2 py-1.5 text-center text-[#FFB81C]">{winner} ganador</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
             <div className="space-y-2">
