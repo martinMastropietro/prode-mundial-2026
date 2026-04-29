@@ -72,15 +72,16 @@ export default function CalendarioClient({ matches, realQualifiers, realBracket,
 
       {tab === 'eliminatorias' && (
         <div>
-          {anyResultsLoaded && (
-            <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
-              ⚡ Proyección basada en resultados reales — se actualiza con cada partido
-            </div>
-          )}
+          <div className="mb-3 px-3 py-2 bg-[#003087]/20 border border-[#003087]/30 rounded-xl text-xs text-[#6699ff]">
+            {anyResultsLoaded
+              ? '⚡ Proyección basada en resultados reales — se actualiza con cada partido'
+              : '📅 Los clasificados aparecerán a medida que avance la fase de grupos'}
+          </div>
           <KnockoutBracket
             matches={knockoutMatches}
             projectedQualifiers={qualifiersMap}
             projectedMatches={realBracket}
+            showPredictionLegend={false}
           />
         </div>
       )}

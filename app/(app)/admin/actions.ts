@@ -108,56 +108,21 @@ export async function saveMatchResult(formData: FormData) {
 
   if (isNaN(homeScore) || isNaN(awayScore)) return
 
-  const { data: match } = await admin
+  // El cálculo de puntos lo hace el trigger SQL (on_match_finished).
+  // Solo actualizamos el partido — el trigger se encarga del resto.
+  await admin
     .from('matches')
     .update({
-      home_score:          homeScore,
-      away_score:          awayScore,
-      home_score_full:     homeScore,
-      away_score_full:     awayScore,
-      went_to_extra_time:  wentToET,
-      went_to_penalties:   wentToPens,
-      penalty_winner:      wentToPens ? penWinner : null,
-      status:              'finished',
+      home_score:         homeScore,
+      away_score:         awayScore,
+      home_score_full:    homeScore,
+      away_score_full:    awayScore,
+      went_to_extra_time: wentToET,
+      went_to_penalties:  wentToPens,
+      penalty_winner:     wentToPens ? penWinner : null,
+      status:             'finished',
     })
     .eq('id', matchId)
-    .select('id, match_number, phase')
-    .single()
-
-  if (match) {
-    const realPenaltyWinner = wentToPens && (penWinner === 'home' || penWinner === 'away') ? penWinner : null
-    const { data: predictions } = await admin
-      .from('predictions')
-      .select('id, group_id, predicted_home_score, predicted_away_score, predicted_penalty_winner')
-      .eq('match_id', match.id)
-
-    const groupIds = Array.from(new Set((predictions ?? []).map((prediction) => prediction.group_id)))
-    const { data: groups } = groupIds.length > 0
-      ? await admin
-        .from('groups')
-        .select('id, prediction_mode')
-        .in('id', groupIds)
-      : { data: [] }
-    const groupModes = new Map(((groups ?? []) as GroupModeRow[]).map(group => [group.id, group.prediction_mode]))
-
-    await Promise.all(((predictions ?? []) as PredictionRow[]).map(prediction =>
-      admin
-        .from('predictions')
-        .update({
-          points_earned: calculatePredictionPoints(
-            prediction,
-            homeScore,
-            awayScore,
-            realPenaltyWinner,
-            match.match_number,
-            match.phase,
-            groupModes.get(prediction.group_id)
-          ),
-          calculated_at: new Date().toISOString(),
-        })
-        .eq('id', prediction.id)
-    ))
-  }
 
   revalidateAdminResultViews()
 }

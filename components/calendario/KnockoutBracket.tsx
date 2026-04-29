@@ -174,11 +174,13 @@ export default function KnockoutBracket({
   projectedQualifiers,
   projectedMatches,
   predictionMap,
+  showPredictionLegend = true,
 }: {
   matches: Match[]
   projectedQualifiers?: ProjectedQualifiers
   projectedMatches?: Record<number, MatchProjection>
   predictionMap?: Map<string, Prediction>
+  showPredictionLegend?: boolean
 }) {
   const byNum = new Map(matches.map(m => [m.match_number, m]))
   const byPhase: Partial<Record<MatchPhase, Match[]>> = {}
@@ -312,10 +314,12 @@ export default function KnockoutBracket({
               <span className="w-3 h-3 rounded-sm bg-[#C8102E]/20 border border-[#C8102E]/30 inline-block" />
               Ganador
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-[#6699ff] font-bold italic">proj.</span>
-              Proyectado desde tus predicciones
-            </span>
+            {showPredictionLegend && (
+              <span className="flex items-center gap-1.5">
+                <span className="text-[#6699ff] font-bold italic">proj.</span>
+                Proyectado desde tus predicciones
+              </span>
+            )}
           </div>
         )}
       </div>
