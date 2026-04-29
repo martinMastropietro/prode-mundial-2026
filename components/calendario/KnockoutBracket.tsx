@@ -208,51 +208,85 @@ export default function KnockoutBracket({
           {/* CENTER */}
           {(() => {
             const finProj = fin[0] ? projectedMatches?.[fin[0].match_number] : undefined
-            // Determinar campeón proyectado
-            const champion: Team | null = (() => {
-              if (fin[0]?.status === 'finished') {
-                const hw = (fin[0].home_score_full ?? 0) > (fin[0].away_score_full ?? 0)
-                const aw = (fin[0].away_score_full ?? 0) > (fin[0].home_score_full ?? 0)
-                if (hw) return fin[0].home_team ?? null
-                if (aw) return fin[0].away_team ?? null
-                if (fin[0].penalty_winner === 'home') return fin[0].home_team ?? null
-                if (fin[0].penalty_winner === 'away') return fin[0].away_team ?? null
+            const finPred = fin[0] ? predictionMap?.get(fin[0].id) : undefined
+            const tpProj  = tp[0]  ? projectedMatches?.[tp[0].match_number]  : undefined
+            const tpPred  = tp[0]  ? predictionMap?.get(tp[0].id)  : undefined
+
+            // Determinar campeón: resultado real > predicción del partido > penales
+            function getWinner(
+              match: Match | undefined,
+              proj: MatchProjection | undefined,
+              pred: Prediction | undefined
+            ): Team | null {
+              if (!match) return null
+              if (match.status === 'finished' && match.home_score_full !== null && match.away_score_full !== null) {
+                const hw = match.home_score_full > match.away_score_full
+                const aw = match.away_score_full > match.home_score_full
+                if (hw) return match.home_team ?? null
+                if (aw) return match.away_team ?? null
+                if (match.penalty_winner === 'home') return match.home_team ?? null
+                if (match.penalty_winner === 'away') return match.away_team ?? null
               }
-              if (finProj?.penaltyWinner === 'home') return finProj.home
-              if (finProj?.penaltyWinner === 'away') return finProj.away
+              // Usa predicción del partido (con equipos del proj)
+              if (pred && proj) {
+                const hg = pred.predicted_home_score
+                const ag = pred.predicted_away_score
+                const pen = pred.predicted_penalty_winner
+                if (hg > ag) return proj.home ?? null
+                if (ag > hg) return proj.away ?? null
+                if (pen === 'home') return proj.home ?? null
+                if (pen === 'away') return proj.away ?? null
+              }
               return null
-            })()
+            }
+
+            const champion  = getWinner(fin[0], finProj, finPred)
+            const thirdPlace = getWinner(tp[0],  tpProj,  tpPred)
 
             return (
-              <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
+              <div className="flex flex-col items-center justify-center gap-3 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
+
+                {/* Campeón sobre la copa */}
                 <div className="text-center">
-                  {/* Campeón sobre la copa */}
-                  {champion && (
-                    <div className="flex flex-col items-center mb-2 gap-1">
-                      <span className="text-3xl">{champion.flag_emoji ?? ''}</span>
-                      <span className="text-[#FFD700] font-black text-sm">{champion.name}</span>
+                  {champion ? (
+                    <div className="flex flex-col items-center gap-1 mb-3">
+                      <span className="text-4xl drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">{champion.flag_emoji ?? '🏆'}</span>
+                      <span className="text-[#FFD700] font-black text-sm tracking-wide">{champion.name}</span>
+                    </div>
+                  ) : (
+                    <div className="h-14 flex items-end justify-center mb-3">
+                      <span className="text-[#8B8FA8] text-xs">Predecí la final →</span>
                     </div>
                   )}
-                  {/* Copa como imagen real */}
-                  <div className="relative w-16 h-20 mx-auto mb-1 drop-shadow-[0_0_12px_rgba(255,184,28,0.5)]">
+                  {/* Copa real */}
+                  <div className="relative w-16 h-20 mx-auto drop-shadow-[0_0_16px_rgba(255,184,28,0.5)]">
                     <Image src="/trophy.png" alt="FIFA World Cup" fill className="object-contain" />
                   </div>
-                  <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider">Final</div>
+                  <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider mt-3">Final</div>
                 </div>
+
                 <MatchBox
                   match={fin[0] ? { ...fin[0], slotLabel: 'Final' } as BracketMatch : null}
                   projectedHome={finProj?.home}
                   projectedAway={finProj?.away}
+                  prediction={finPred}
                   proj={finProj}
                   highlight
                 />
-                <div className="mt-2 text-center">
-                  <div className="text-[#8B8FA8] text-xs font-bold uppercase tracking-wider mb-2">3° Puesto</div>
+
+                {/* 3° Puesto */}
+                <div className="mt-1 text-center w-full">
+                  <div className="text-[#8B8FA8] text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center justify-center gap-2">
+                    {thirdPlace && <span className="text-xl">{thirdPlace.flag_emoji}</span>}
+                    3° Puesto
+                    {thirdPlace && <span className="text-xl">{thirdPlace.flag_emoji}</span>}
+                  </div>
                   <MatchBox
                     match={tp[0] ? { ...tp[0], slotLabel: '3°' } as BracketMatch : null}
-                    projectedHome={tp[0] ? projectedMatches?.[tp[0].match_number]?.home : undefined}
-                    projectedAway={tp[0] ? projectedMatches?.[tp[0].match_number]?.away : undefined}
-                    proj={tp[0] ? projectedMatches?.[tp[0].match_number] : undefined}
+                    projectedHome={tpProj?.home}
+                    projectedAway={tpProj?.away}
+                    prediction={tpPred}
+                    proj={tpProj}
                   />
                 </div>
               </div>
