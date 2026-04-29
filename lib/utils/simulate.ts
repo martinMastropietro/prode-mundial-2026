@@ -9,7 +9,11 @@ export type Standing = {
 }
 
 export type ProjectedQualifiers = Map<string, Team>
-export type MatchProjection = { home: Team | null; away: Team | null }
+export type MatchProjection = {
+  home: Team | null
+  away: Team | null
+  penaltyWinner?: 'home' | 'away' | null
+}
 
 const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L']
 
@@ -219,16 +223,20 @@ export function buildFullBracketProjection(
       const match = byNum.get(num)
       if (!match) continue
       // Usar resultado real si ya terminó
-      let hg: number, ag: number, penWinner: string | null | undefined = null
+      let hg: number, ag: number, penWinner: 'home' | 'away' | null = null
       if (match.status === 'finished' && match.home_score_full !== null && match.away_score_full !== null) {
         hg = match.home_score_full; ag = match.away_score_full
-        penWinner = match.penalty_winner
+        penWinner = (match.penalty_winner as 'home' | 'away' | null) ?? null
       } else {
         const pred = predictions.get(match.id)
         if (!pred) continue
         hg = pred.predicted_home_score; ag = pred.predicted_away_score
-        penWinner = pred.predicted_penalty_winner
+        penWinner = pred.predicted_penalty_winner ?? null
       }
+
+      // Guardar proyección incluyendo penalty winner para display
+      const existingProj = proj.get(num) ?? { home: p?.home ?? null, away: p?.away ?? null }
+      proj.set(num, { ...existingProj, penaltyWinner: hg === ag ? penWinner : null })
 
       let winner: Team | null = null
       let loser: Team | null = null

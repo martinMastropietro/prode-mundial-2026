@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import type { Match, MatchPhase, Prediction, Team } from '@/types'
 import { R32_BRACKET } from '@/lib/utils/simulate'
 import type { MatchProjection, ProjectedQualifiers } from '@/lib/utils/simulate'
@@ -37,13 +38,14 @@ const BRACKET_ORDER = {
 }
 
 function MatchBox({
-  match, highlight, projectedHome, projectedAway, prediction
+  match, highlight, projectedHome, projectedAway, prediction, proj
 }: {
   match: BracketMatch | null
   highlight?: boolean
   projectedHome?: Team | null
   projectedAway?: Team | null
   prediction?: Prediction
+  proj?: MatchProjection | null
 }) {
   if (!match) {
     return (
@@ -115,11 +117,19 @@ function MatchBox({
         </div>
       </div>
 
-      {match.went_to_penalties && match.penalty_winner && (
-        <div className="border-t border-[#2A2D4A] px-2 py-1 text-center text-[#FFB81C] font-bold text-[10px]">
-          Pen. → {match.penalty_winner === 'home' ? homeTeam?.name : awayTeam?.name}
-        </div>
-      )}
+      {/* Resultado en penales — real o proyectado */}
+      {(() => {
+        const penWinner = match.went_to_penalties && match.penalty_winner
+          ? match.penalty_winner
+          : proj?.penaltyWinner ?? null
+        if (!penWinner) return null
+        const penTeam = penWinner === 'home' ? homeTeam : awayTeam
+        return (
+          <div className="border-t border-[#2A2D4A] px-2 py-1 text-center text-[#FFB81C] font-bold text-[10px]">
+            Pen. → {penTeam?.name ?? penWinner}
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -150,6 +160,7 @@ function RoundColumn({ label, matchNums, byNum, projectedQualifiers, projectedMa
               projectedHome={projH}
               projectedAway={projA}
               prediction={m ? predictionMap?.get(m.id) : undefined}
+              proj={proj}
             />
           )
         })}
@@ -195,26 +206,58 @@ export default function KnockoutBracket({
           <RoundColumn label="Semifinal" matchNums={BRACKET_ORDER.sfL} {...colProps} />{divider}
 
           {/* CENTER */}
-          <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
-            <div className="text-center mb-1">
-              <div className="text-2xl mb-1">🏆</div>
-              <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider">Final</div>
-            </div>
-            <MatchBox
-              match={fin[0] ? { ...fin[0], slotLabel: 'Final' } as BracketMatch : null}
-              projectedHome={projectedMatches?.[fin[0]?.match_number]?.home}
-              projectedAway={projectedMatches?.[fin[0]?.match_number]?.away}
-              highlight
-            />
-            <div className="mt-2 text-center">
-              <div className="text-[#8B8FA8] text-xs font-bold uppercase tracking-wider mb-2">3° Puesto</div>
-              <MatchBox
-                match={tp[0] ? { ...tp[0], slotLabel: '3°' } as BracketMatch : null}
-                projectedHome={projectedMatches?.[tp[0]?.match_number]?.home}
-                projectedAway={projectedMatches?.[tp[0]?.match_number]?.away}
-              />
-            </div>
-          </div>
+          {(() => {
+            const finProj = fin[0] ? projectedMatches?.[fin[0].match_number] : undefined
+            // Determinar campeón proyectado
+            const champion: Team | null = (() => {
+              if (fin[0]?.status === 'finished') {
+                const hw = (fin[0].home_score_full ?? 0) > (fin[0].away_score_full ?? 0)
+                const aw = (fin[0].away_score_full ?? 0) > (fin[0].home_score_full ?? 0)
+                if (hw) return fin[0].home_team ?? null
+                if (aw) return fin[0].away_team ?? null
+                if (fin[0].penalty_winner === 'home') return fin[0].home_team ?? null
+                if (fin[0].penalty_winner === 'away') return fin[0].away_team ?? null
+              }
+              if (finProj?.penaltyWinner === 'home') return finProj.home
+              if (finProj?.penaltyWinner === 'away') return finProj.away
+              return null
+            })()
+
+            return (
+              <div className="flex flex-col items-center justify-center gap-4 flex-shrink-0 px-4" style={{ alignSelf: 'center' }}>
+                <div className="text-center">
+                  {/* Campeón sobre la copa */}
+                  {champion && (
+                    <div className="flex flex-col items-center mb-2 gap-1">
+                      <span className="text-3xl">{champion.flag_emoji ?? ''}</span>
+                      <span className="text-[#FFD700] font-black text-sm">{champion.name}</span>
+                    </div>
+                  )}
+                  {/* Copa como imagen real */}
+                  <div className="relative w-16 h-20 mx-auto mb-1 drop-shadow-[0_0_12px_rgba(255,184,28,0.5)]">
+                    <Image src="/trophy.png" alt="FIFA World Cup" fill className="object-contain" />
+                  </div>
+                  <div className="text-[#FFB81C] text-xs font-bold uppercase tracking-wider">Final</div>
+                </div>
+                <MatchBox
+                  match={fin[0] ? { ...fin[0], slotLabel: 'Final' } as BracketMatch : null}
+                  projectedHome={finProj?.home}
+                  projectedAway={finProj?.away}
+                  proj={finProj}
+                  highlight
+                />
+                <div className="mt-2 text-center">
+                  <div className="text-[#8B8FA8] text-xs font-bold uppercase tracking-wider mb-2">3° Puesto</div>
+                  <MatchBox
+                    match={tp[0] ? { ...tp[0], slotLabel: '3°' } as BracketMatch : null}
+                    projectedHome={tp[0] ? projectedMatches?.[tp[0].match_number]?.home : undefined}
+                    projectedAway={tp[0] ? projectedMatches?.[tp[0].match_number]?.away : undefined}
+                    proj={tp[0] ? projectedMatches?.[tp[0].match_number] : undefined}
+                  />
+                </div>
+              </div>
+            )
+          })()}
 
           {/* RIGHT */}
           {divider}<RoundColumn label="Semifinal" matchNums={BRACKET_ORDER.sfR} {...colProps} />
