@@ -12,6 +12,7 @@ type Props = {
   prediction?: Prediction
   groupId: string
   predictionMode?: PredictionMode
+  phaseCloseDate?: string | null
   projectedHome?: Team | null
   projectedAway?: Team | null
   onPredictionChange?: (
@@ -26,11 +27,11 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const isKnockout = (phase: string) => phase !== 'group'
 
-export default function MatchCard({ match, prediction, groupId, predictionMode, projectedHome, projectedAway, onPredictionChange }: Props) {
+export default function MatchCard({ match, prediction, groupId, predictionMode, phaseCloseDate, projectedHome, projectedAway, onPredictionChange }: Props) {
   const mode = normalizePredictionMode(predictionMode)
   const closed = mode === 'full_bracket'
     ? isMatchClosed(match.match_date, match.status)
-    : !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status)
+    : !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status, phaseCloseDate)
   const knockout = isKnockout(match.phase)
 
   // Use real teams if available, otherwise projected

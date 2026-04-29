@@ -14,7 +14,7 @@ const CreateGroupSchema = z.object({
     .trim(),
   name: z.string().min(2, 'Mínimo 2 caracteres').max(50, 'Máximo 50 caracteres').trim(),
   access_password: z.string().min(4, 'Mínimo 4 caracteres'),
-  prediction_mode: z.enum(['phase_by_phase', 'full_bracket', 'hybrid']).default('full_bracket'),
+  prediction_mode: z.enum(['phase_by_phase', 'full_bracket', 'hybrid']).default('phase_by_phase'),
   predictions_visible: z.boolean().default(false),
   has_top_scorer: z.boolean().default(false),
   has_top_assist: z.boolean().default(false),

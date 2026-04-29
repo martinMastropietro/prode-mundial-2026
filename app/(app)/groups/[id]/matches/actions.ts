@@ -32,7 +32,18 @@ export async function savePrediction(formData: FormData) {
   ])
 
   const mode = normalizePredictionMode(group?.prediction_mode)
-  if (!match || !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status)) return
+  const { data: phaseStart } = match
+    ? await supabase
+      .from('matches')
+      .select('match_date')
+      .eq('phase', match.phase)
+      .not('match_date', 'is', null)
+      .order('match_date', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+    : { data: null }
+
+  if (!match || !isPredictionOpenForMode(mode, match.phase, match.match_date, match.status, phaseStart?.match_date)) return
 
   const upsertData: Record<string, unknown> = {
     user_id: user.id,

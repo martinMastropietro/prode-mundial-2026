@@ -3,7 +3,7 @@ import type { MatchPhase } from '@/types'
 export type PredictionMode = 'phase_by_phase' | 'full_bracket' | 'hybrid'
 
 export const PREDICTION_MODE_LABELS: Record<PredictionMode, string> = {
-  phase_by_phase: 'Fase por fase',
+  phase_by_phase: 'Fase por fase, la clásica',
   full_bracket: 'Cuadro completo',
   hybrid: 'Híbrido',
 }
@@ -34,7 +34,7 @@ const PHASE_WINDOWS: Record<MatchPhase, { open: string; close: string }> = {
 const PRE_TOURNAMENT_LOCK = '2026-06-11T00:00:00Z'
 
 export function normalizePredictionMode(value: unknown): PredictionMode {
-  return MODE_OPTIONS.includes(value as PredictionMode) ? value as PredictionMode : 'full_bracket'
+  return MODE_OPTIONS.includes(value as PredictionMode) ? value as PredictionMode : 'phase_by_phase'
 }
 
 export function isPredictionOpenForMode(
@@ -42,13 +42,15 @@ export function isPredictionOpenForMode(
   phase: MatchPhase,
   matchDate: string | null,
   status: string,
+  phaseCloseDate?: string | null,
   now = new Date()
 ) {
   if (status !== 'scheduled') return false
 
   if (mode === 'phase_by_phase') {
     const window = PHASE_WINDOWS[phase]
-    return now >= new Date(window.open) && now < new Date(window.close)
+    const closeAt = phaseCloseDate ?? window.close
+    return now >= new Date(window.open) && now < new Date(closeAt)
   }
 
   if (mode === 'hybrid') {
@@ -67,4 +69,3 @@ export function predictionClosedMessage(mode: PredictionMode, phase: MatchPhase)
   if (mode === 'hybrid') return 'El cuadro pre-torneo se cerró al comenzar el Mundial.'
   return 'El partido ya está cerrado.'
 }
-

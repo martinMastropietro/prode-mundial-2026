@@ -42,6 +42,18 @@ export default function PredictionsPanel({ matches, teams, groupId, predictionMo
     return obj
   }, [qualifiers, matches, predictionMap])
 
+  const phaseCloseDates = useMemo(() => {
+    const result: Partial<Record<Match['phase'], string | null>> = {}
+    for (const match of matches) {
+      if (!match.match_date) continue
+      const current = result[match.phase]
+      if (!current || new Date(match.match_date) < new Date(current)) {
+        result[match.phase] = match.match_date
+      }
+    }
+    return result
+  }, [matches])
+
   const updatePrediction = (
     matchId: string,
     homeGoals: number | null,
@@ -92,6 +104,7 @@ export default function PredictionsPanel({ matches, teams, groupId, predictionMo
         predictionMap={predictionMap}
         groupId={groupId}
         predictionMode={mode}
+        phaseCloseDates={phaseCloseDates}
         bracketProjection={bracketProjectionObj}
         onPredictionChange={updatePrediction}
         groupStandings={standings}

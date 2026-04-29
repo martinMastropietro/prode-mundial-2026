@@ -11,7 +11,8 @@ export default function CreateGroupPage() {
   const [publicId, setPublicId] = useState(state?.values?.public_id ?? '')
   const [name, setName] = useState(state?.values?.name ?? '')
   const [password, setPassword] = useState(state?.values?.access_password ?? '')
-  const [predictionMode, setPredictionMode] = useState(state?.values?.prediction_mode ?? 'full_bracket')
+  const [predictionMode, setPredictionMode] = useState(state?.values?.prediction_mode ?? 'phase_by_phase')
+  const [showModeInfo, setShowModeInfo] = useState(false)
 
   return (
     <div className="max-w-md mx-auto">
@@ -88,7 +89,30 @@ export default function CreateGroupPage() {
 
           {/* Modalidad */}
           <div className="space-y-3 pt-1">
-            <p className="text-sm font-medium text-[#8B8FA8] uppercase tracking-wide">Modalidad de prode</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-[#8B8FA8] uppercase tracking-wide">Modalidad de prode</p>
+              <button
+                type="button"
+                onClick={() => setShowModeInfo((value) => !value)}
+                className="text-xs font-bold text-[#6699ff] hover:text-white transition-colors"
+              >
+                {showModeInfo ? 'Ocultar info' : 'Más info'}
+              </button>
+            </div>
+            {showModeInfo && (
+              <div className="rounded-xl border border-[#2A2D4A] bg-[#0D0D1A] p-3 text-xs text-[#8B8FA8] space-y-2">
+                <p>
+                  <span className="font-bold text-white">Fase por fase:</span> se predice grupos antes del debut.
+                  Después se abre cada fase eliminatoria cuando estén los cruces oficiales y se cierra al empezar el primer partido de esa fase.
+                </p>
+                <p>
+                  <span className="font-bold text-white">Cuadro completo:</span> se predice todo desde el inicio, incluyendo el camino proyectado hasta la final.
+                </p>
+                <p>
+                  <span className="font-bold text-white">Híbrido:</span> se predice el cuadro completo pre-torneo con puntaje alto. Más adelante se pueden sumar votaciones complementarias de cruces reales con menos puntos.
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               {PREDICTION_MODE_OPTIONS.map((option) => (
                 <label

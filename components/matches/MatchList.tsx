@@ -13,6 +13,7 @@ type Props = {
   predictionMap: Map<string, Prediction>
   groupId: string
   predictionMode?: PredictionMode
+  phaseCloseDates?: Partial<Record<Match['phase'], string | null>>
   bracketProjection?: Record<number, { home: Team | null; away: Team | null }>
   onPredictionChange?: (
     matchId: string,
@@ -31,6 +32,7 @@ export default function MatchList({
   predictionMap,
   groupId,
   predictionMode,
+  phaseCloseDates,
   bracketProjection,
   onPredictionChange,
   groupStandings,
@@ -133,6 +135,7 @@ export default function MatchList({
                       prediction={predictionMap.get(match.id)}
                       groupId={groupId}
                       predictionMode={predictionMode}
+                      phaseCloseDate={phaseCloseDates?.[match.phase]}
                       projectedHome={proj?.home ?? undefined}
                       projectedAway={proj?.away ?? undefined}
                       onPredictionChange={onPredictionChange}
